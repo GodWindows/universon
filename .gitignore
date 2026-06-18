@@ -3,3 +3,5 @@ env_data.php
 composer.lock
 node_modules/
 img/logo.ico
+docs/charte-graphique-salon-dore.md
+postman/search_albums.postman_collection.json

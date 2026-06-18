@@ -274,7 +274,7 @@
         $conn = connect_database();
         if ($conn) {
             try {
-                $stmt = $conn->prepare("SELECT id, pseudo, firstName, bio, profile_visibility FROM users WHERE pseudo = ? LIMIT 1");
+                $stmt = $conn->prepare("SELECT id, pseudo, firstName, bio, picture, profile_visibility FROM users WHERE pseudo = ? LIMIT 1");
                 $stmt->execute([$pseudo]);
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
                 return $row ?: null;
