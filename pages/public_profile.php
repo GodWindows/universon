@@ -934,6 +934,8 @@
             catch (e) { document.getElementById('salonNoWebgl').classList.add('show'); if (loaderEl) loaderEl.classList.add('hidden'); return null; }
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
             renderer.outputColorSpace = THREE.SRGBColorSpace;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 0.9;
 
             var scene = new THREE.Scene();
             scene.background = new THREE.Color(0x141009);
@@ -946,12 +948,12 @@
 
             /* ── une couleur de salle par catégorie ── */
             var PALETTES = {
-                favorite:        { top: '#3f7257', mid: '#336249', bot: '#234734', line: 'rgba(18,38,26,.38)',  wall: 0x336249 },
-                most_played:     { top: '#9c4651', mid: '#7a2f3a', bot: '#551f28', line: 'rgba(40,10,16,.42)',  wall: 0x7a2f3a },
-                guilty_pleasure: { top: '#3f6280', mid: '#2c4a63', bot: '#1b3043', line: 'rgba(8,20,36,.42)',   wall: 0x2c4a63 },
-                _a:              { top: '#7a6a92', mid: '#574a6e', bot: '#392f4a', line: 'rgba(20,12,34,.42)',  wall: 0x574a6e },
-                _b:              { top: '#9a7a3e', mid: '#7a5e2c', bot: '#54401c', line: 'rgba(36,24,8,.42)',   wall: 0x7a5e2c },
-                _default:        { top: '#3f7257', mid: '#336249', bot: '#234734', line: 'rgba(18,38,26,.38)',  wall: 0x336249 }
+                favorite:        { top: '#2d5a42', mid: '#1c4030', bot: '#0e2417', wall: 0x1c4030 },
+                most_played:     { top: '#79303a', mid: '#561c26', bot: '#2c0d13', wall: 0x561c26 },
+                guilty_pleasure: { top: '#2c4a66', mid: '#1c3548', bot: '#0c1a27', wall: 0x1c3548 },
+                _a:              { top: '#574868', mid: '#3a3050', bot: '#1f1933', wall: 0x3a3050 },
+                _b:              { top: '#785a2a', mid: '#56401d', bot: '#332210', wall: 0x56401d },
+                _default:        { top: '#2d5a42', mid: '#1c4030', bot: '#0e2417', wall: 0x1c4030 }
             };
             var EXTRA = ['_a', '_b'], extraI = 0, palKeyMap = {};
             function palOf(key) {
@@ -962,47 +964,103 @@
 
             /* ── textures procédurales ── */
             function parquetTex() {
-                var c = document.createElement('canvas'); c.width = c.height = 256; var g = c.getContext('2d');
-                g.fillStyle = '#5c4329'; g.fillRect(0, 0, 256, 256);
-                var cols = ['#7a5a36', '#8a6a40', '#6d5030', '#83613a', '#74552f'];
-                var bw = 64, bh = 32;
-                for (var row = 0, y = 0; y < 256; y += bh, row++) {
+                var S = 512, c = document.createElement('canvas'); c.width = c.height = S; var g = c.getContext('2d');
+                g.fillStyle = '#3f2c19'; g.fillRect(0, 0, S, S);
+                var cols = ['#7a5a36', '#8a6a40', '#6c4f2e', '#82603a', '#73552f', '#8f6e45', '#684c2c'];
+                var bw = 128, bh = 44;
+                for (var row = 0, y = -bh; y < S + bh; y += bh, row++) {
                     var off = (row % 2) * (bw / 2);
-                    for (var x = -bw; x < 256; x += bw) {
+                    for (var x = -bw; x <= S; x += bw) {
                         var px = x + off;
-                        g.fillStyle = cols[(Math.random() * cols.length) | 0];
-                        g.fillRect(px + 1, y + 1, bw - 2, bh - 2);
-                        g.strokeStyle = 'rgba(40,28,15,.5)'; g.lineWidth = 1;
-                        for (var k = 0; k < 3; k++) { g.beginPath(); var gy = y + 6 + k * 9; g.moveTo(px + 2, gy); g.lineTo(px + bw - 2, gy + (Math.random() * 2 - 1)); g.stroke(); }
+                        var base = cols[(Math.random() * cols.length) | 0];
+                        g.fillStyle = base; g.fillRect(px, y, bw, bh);
+                        /* veines du bois (lignes ondulées) */
+                        for (var k = 0; k < 16; k++) {
+                            var gy = y + 2 + Math.random() * (bh - 4);
+                            var light = Math.random() < 0.5;
+                            g.strokeStyle = (light ? 'rgba(168,134,86,' : 'rgba(38,24,11,') + (0.05 + Math.random() * 0.13) + ')';
+                            g.lineWidth = 1; g.beginPath(); g.moveTo(px, gy);
+                            for (var sx = 1; sx <= 8; sx++) g.lineTo(px + (bw / 8) * sx, gy + (Math.random() * 3 - 1.5));
+                            g.stroke();
+                        }
+                        /* nœud occasionnel */
+                        if (Math.random() < 0.16) {
+                            var kx = px + 12 + Math.random() * (bw - 24), ky = y + 8 + Math.random() * (bh - 16);
+                            var rg = g.createRadialGradient(kx, ky, 0, kx, ky, 6);
+                            rg.addColorStop(0, 'rgba(34,20,8,.65)'); rg.addColorStop(0.7, 'rgba(60,42,22,.35)'); rg.addColorStop(1, 'rgba(60,42,22,0)');
+                            g.fillStyle = rg; g.beginPath(); g.arc(kx, ky, 6, 0, 6.283); g.fill();
+                        }
+                        /* biseau : arête claire en haut/gauche, sombre en bas/droite */
+                        g.strokeStyle = 'rgba(255,232,184,.16)'; g.lineWidth = 1;
+                        g.beginPath(); g.moveTo(px + 0.5, y + bh - 1); g.lineTo(px + 0.5, y + 0.5); g.lineTo(px + bw, y + 0.5); g.stroke();
+                        g.strokeStyle = 'rgba(16,9,3,.6)'; g.lineWidth = 1.5;
+                        g.beginPath(); g.moveTo(px + bw - 0.5, y); g.lineTo(px + bw - 0.5, y + bh); g.lineTo(px, y + bh - 0.5); g.stroke();
                     }
+                }
+                /* salissures / patine globale */
+                for (var m = 0; m < 46; m++) {
+                    var mx = Math.random() * S, my = Math.random() * S, mr = 30 + Math.random() * 90, dark = Math.random() < 0.55;
+                    var mg = g.createRadialGradient(mx, my, 0, mx, my, mr);
+                    mg.addColorStop(0, 'rgba(' + (dark ? '8,5,2' : '120,96,60') + ',' + (0.04 + Math.random() * 0.06) + ')'); mg.addColorStop(1, 'transparent');
+                    g.fillStyle = mg; g.fillRect(0, 0, S, S);
                 }
                 var t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
             }
+            function damask(g, cx, cy, r) {
+                g.save(); g.translate(cx, cy);
+                g.beginPath();
+                g.moveTo(0, -r); g.bezierCurveTo(r * 0.62, -r * 0.5, r * 0.62, r * 0.5, 0, r);
+                g.bezierCurveTo(-r * 0.62, r * 0.5, -r * 0.62, -r * 0.5, 0, -r);
+                g.fill();
+                /* petites volutes latérales */
+                g.beginPath(); g.ellipse(r * 0.42, 0, r * 0.16, r * 0.42, 0, 0, 6.283); g.fill();
+                g.beginPath(); g.ellipse(-r * 0.42, 0, r * 0.16, r * 0.42, 0, 0, 6.283); g.fill();
+                g.restore();
+            }
             function wallTex(pal) {
-                var c = document.createElement('canvas'); c.width = c.height = 256; var g = c.getContext('2d');
-                var grd = g.createLinearGradient(0, 0, 0, 256);
-                grd.addColorStop(0, pal.top); grd.addColorStop(0.5, pal.mid); grd.addColorStop(1, pal.bot);
-                g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
-                g.strokeStyle = pal.line; g.lineWidth = 2;
-                for (var i = 1; i < 4; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, 256); g.stroke(); }
-                for (var n = 0; n < 1600; n++) { g.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.025) + ')'; g.fillRect(Math.random() * 256, Math.random() * 256, 1, 1); }
+                var S = 512, c = document.createElement('canvas'); c.width = c.height = S; var g = c.getContext('2d');
+                var grd = g.createLinearGradient(0, 0, 0, S);
+                grd.addColorStop(0, pal.top); grd.addColorStop(0.55, pal.mid); grd.addColorStop(1, pal.bot);
+                g.fillStyle = grd; g.fillRect(0, 0, S, S);
+                /* patine inégale (à dominante sombre → profondeur) */
+                for (var m = 0; m < 80; m++) {
+                    var mx = Math.random() * S, my = Math.random() * S, mr = 40 + Math.random() * 150, lite = Math.random() < 0.32;
+                    var mg = g.createRadialGradient(mx, my, 0, mx, my, mr);
+                    mg.addColorStop(0, 'rgba(' + (lite ? '255,248,228' : '0,0,0') + ',' + ((lite ? 0.018 : 0.04) + Math.random() * 0.03) + ')'); mg.addColorStop(1, 'transparent');
+                    g.fillStyle = mg; g.fillRect(0, 0, S, S);
+                }
+                /* motif damassé embossé (soie) : passe d'ombre + passe de lumière, décalées */
+                var step = 96, R = step * 0.3;
+                function grid(dx, dy, col) { g.fillStyle = col; for (var yy = 0; yy <= S; yy += step) for (var xx = 0; xx <= S; xx += step) { damask(g, xx + dx, yy + dy, R); damask(g, xx + step / 2 + dx, yy + step / 2 + dy, R); } }
+                grid(1, 2, 'rgba(0,0,0,0.06)');             /* ombre */
+                grid(-1, -2, 'rgba(255,247,226,0.032)');    /* lumière */
+                /* fines striures de soie (verticales + horizontales) */
+                for (var vx = 0; vx < S; vx += 2) { g.strokeStyle = 'rgba(0,0,0,' + (Math.random() * 0.045) + ')'; g.beginPath(); g.moveTo(vx + 0.5, 0); g.lineTo(vx + 0.5, S); g.stroke(); }
                 var t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
             }
 
             /* ── matériaux ── */
-            var floorMat = new THREE.MeshStandardMaterial({ map: parquetTex(), roughness: 0.65, metalness: 0.04 });
+            var floorTex = parquetTex();
+            var floorMat = new THREE.MeshStandardMaterial({ map: floorTex, bumpMap: floorTex, bumpScale: 0.07, roughness: 0.72, metalness: 0.0 });
             var ceilMat  = new THREE.MeshStandardMaterial({ color: CREAM, roughness: 1, side: THREE.DoubleSide });
-            var goldMat  = new THREE.MeshStandardMaterial({ color: GOLD, metalness: 0.9, roughness: 0.32, emissive: 0x3c2e0d, emissiveIntensity: 0.5 });
+            var goldMat  = new THREE.MeshStandardMaterial({ color: GOLD, metalness: 0.85, roughness: 0.38, emissive: 0x3c2e0d, emissiveIntensity: 0.45 });
             var darkWood = new THREE.MeshStandardMaterial({ color: 0x281d12, roughness: 1 });
 
-            /* murs : texture de gradient par catégorie (côtés) + couleur plate (transversaux) */
+            /* murs : même soie damassée en relief partout (côtés + transversaux) */
             var wallTexCache = {}, flatMatCache = {};
             function wallTexOf(key) { if (!wallTexCache[key]) wallTexCache[key] = wallTex(palOf(key)); return wallTexCache[key]; }
             function sideWallMat(key, rx, ry) {
                 var t = wallTexOf(key).clone(); t.needsUpdate = true; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.colorSpace = THREE.SRGBColorSpace;
-                return new THREE.MeshStandardMaterial({ map: t, roughness: 0.92, metalness: 0, side: THREE.DoubleSide });
+                return new THREE.MeshStandardMaterial({ map: t, bumpMap: t, bumpScale: 0.035, roughness: 0.97, metalness: 0, side: THREE.DoubleSide });
             }
-            function flatWallMat(key) { if (!flatMatCache[key]) flatMatCache[key] = new THREE.MeshStandardMaterial({ color: palOf(key).wall, roughness: 0.95, metalness: 0, side: THREE.DoubleSide }); return flatMatCache[key]; }
+            /* mur transversal (ShapeGeometry : UV = coords ⇒ on cale la texture sur W×H) */
+            function transWallMat(key) {
+                if (flatMatCache[key]) return flatMatCache[key];
+                var t = wallTexOf(key).clone(); t.needsUpdate = true; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+                t.repeat.set(3 / W, 2 / H); t.offset.set(1.5, 0); t.colorSpace = THREE.SRGBColorSpace;
+                flatMatCache[key] = new THREE.MeshStandardMaterial({ map: t, bumpMap: t, bumpScale: 0.035, roughness: 0.97, metalness: 0, side: THREE.DoubleSide });
+                return flatMatCache[key];
+            }
 
             /* ── salles : une travée (paire) par catégorie, à la suite ── */
             var cats = (data && data.categories) ? data.categories : [];
@@ -1035,7 +1093,7 @@
             function sideWalls(zA, zB, key) {
                 var len = Math.abs(zA - zB), cz = (zA + zB) / 2;
                 [-1, 1].forEach(function (s) {
-                    var wall = new THREE.Mesh(new THREE.PlaneGeometry(len, H), sideWallMat(key, len / 4, H / 4));
+                    var wall = new THREE.Mesh(new THREE.PlaneGeometry(len, H), sideWallMat(key, len / 3.5, 2));
                     wall.rotation.y = s * Math.PI / 2; wall.position.set(s * W / 2, H / 2, cz); scene.add(wall);
                     var corn = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.28, len), goldMat);
                     corn.position.set(s * (W / 2 - 0.09), H - 0.32, cz); scene.add(corn);
@@ -1059,10 +1117,10 @@
                     var bulb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), bulbMat);
                     bulb.position.set(Math.cos(a) * 0.5, H - 0.9, Math.sin(a) * 0.5); grp.add(bulb);
                 }
-                var light = new THREE.PointLight(0xffe2a8, 1.5, ROOM_D * 2.2, 1.6);
+                var light = new THREE.PointLight(0xffe2a8, 2.6, ROOM_D * 2.4, 1.5);
                 light.position.set(0, H - 1, 0); grp.add(light);
                 grp.position.z = z; scene.add(grp);
-                return { grp: grp, light: light, base: 1.5, phase: Math.random() * 6.28 };
+                return { grp: grp, light: light, base: 2.6, phase: Math.random() * 6.28 };
             }
             var chandeliers = [];
             for (var ci = 0; ci <= nBays; ci++) {
@@ -1083,7 +1141,7 @@
                     hole.moveTo(-DOOR_W / 2, 0); hole.lineTo(DOOR_W / 2, 0); hole.lineTo(DOOR_W / 2, DOOR_H); hole.lineTo(-DOOR_W / 2, DOOR_H); hole.lineTo(-DOOR_W / 2, 0);
                     shape.holes.push(hole);
                 }
-                var m = new THREE.Mesh(new THREE.ShapeGeometry(shape), flatWallMat(key));
+                var m = new THREE.Mesh(new THREE.ShapeGeometry(shape), transWallMat(key));
                 m.position.z = z; scene.add(m);
                 if (!solid) {
                     [-1, 1].forEach(function (s) {
@@ -1134,7 +1192,7 @@
                 var grp = new THREE.Group();
                 var frame = new THREE.Mesh(new THREE.BoxGeometry(PW + FR, PW + FR, 0.16), goldMat);
                 frame.position.set(x, 3.3, z + 0.05); grp.add(frame);
-                var mat = new THREE.MeshStandardMaterial({ color: STUC, roughness: 0.55, metalness: 0.02 });
+                var mat = new THREE.MeshStandardMaterial({ color: STUC, roughness: 0.9, metalness: 0.0 });
                 var plane = new THREE.Mesh(new THREE.PlaneGeometry(PW, PW), mat);
                 plane.position.set(x, 3.3, z + 0.14);
                 plane.userData = { name: album.name || '', artist: album.artist || '' };
@@ -1142,16 +1200,12 @@
                 var ltex = labelTex(album.name || '', album.artist || '');
                 var plaque = new THREE.Mesh(new THREE.PlaneGeometry(1.35, 0.34), new THREE.MeshStandardMaterial({ map: ltex, emissive: 0xffffff, emissiveMap: ltex, emissiveIntensity: 0.28, roughness: 0.85 }));
                 plaque.position.set(x, 1.62, z + 0.13); grp.add(plaque);
-                var spot = new THREE.SpotLight(0xfff0d0, 2.4, 8, Math.PI / 6, 0.5, 1.2);
-                spot.position.set(x, 6.2, z + 2.2);
-                spot.target.position.set(x, 3.3, z); grp.add(spot); grp.add(spot.target);
                 scene.add(grp);
                 if (album.img) {
                     loadList.push(1);
                     texLoader.load(album.img, function (tex) {
                         tex.colorSpace = THREE.SRGBColorSpace;
                         mat.map = tex; mat.color.set(0xffffff);
-                        mat.emissive = new THREE.Color(0xffffff); mat.emissiveMap = tex; mat.emissiveIntensity = 0.16;
                         mat.needsUpdate = true; texDone();
                     }, undefined, function () { texDone(); });
                 }
@@ -1177,8 +1231,8 @@
             endArt.position.set(0, 3.4, zEnd + 0.14); scene.add(endArt);
 
             /* ── lumières d'ambiance ── */
-            scene.add(new THREE.AmbientLight(0xfff1d8, 0.5));
-            scene.add(new THREE.HemisphereLight(0xfff4e0, 0x3a332a, 0.5));
+            scene.add(new THREE.AmbientLight(0xfff1d8, 0.4));
+            scene.add(new THREE.HemisphereLight(0xfff4e0, 0x33291c, 0.42));
             var keyLight = new THREE.DirectionalLight(0xfff0d8, 0.45); keyLight.position.set(2, 8, 8); scene.add(keyLight);
 
             /* ── chargement / loader ── */
