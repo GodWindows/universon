@@ -6,15 +6,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Get the access token
-$access_token = getSpotifyToken($spotify_client_id, $spotify_client_secret);
-
-if (!$access_token) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to get Spotify access token']);
-    exit;
-}
-
 // Check if request is from your app URL
 $allowed_origins = [
     'http://localhost:8000',
@@ -53,7 +44,6 @@ if (!$is_allowed) {
 $query = $_GET['q'] ?? $_POST['q'] ?? '';
 $type = $_GET['type'] ?? $_POST['type'] ?? 'album';
 $limit = $_GET['limit'] ?? $_POST['limit'] ?? '8';
-$market = $_GET['market'] ?? $_POST['market'] ?? 'FR';
 
 // Validate parameters
 if (empty($query)) {
@@ -62,36 +52,22 @@ if (empty($query)) {
     exit;
 }
 
-// Search Spotify API
-function searchSpotify($query, $type, $limit, $market, $access_token) {
-    $url = 'https://api.spotify.com/v1/search?' . http_build_query([
-        'q' => $query,
-        'type' => $type,
+// Search Deezer API
+function searchSpotify($query, $type, $limit) {
+    $searchQuery = "\"" . $query . "\"";
+    $url = 'https://api.deezer.com/search/album?' . http_build_query([
+        'q' => $searchQuery,
         'limit' => $limit,
-        'market' => $market
     ]);
     
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $access_token
-    ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    
-    if ($http_code === 401) {
-        // Token expired, try to get a new one
-        global $spotify_client_id, $spotify_client_secret;
-        $new_token = getSpotifyToken($spotify_client_id, $spotify_client_secret);
-        if ($new_token) {
-            // Retry with new token
-            return searchSpotify($query, $type, $limit, $market, $new_token);
-        }
-    }
     
     if ($http_code === 200) {
         return json_decode($response, true);
@@ -100,35 +76,34 @@ function searchSpotify($query, $type, $limit, $market, $access_token) {
     return null;
 }
 
-$spotify_data = searchSpotify($query, $type, $limit, $market, $access_token);
+$deezer_data = searchSpotify($query, $type, $limit);
 
-if (!$spotify_data) {
+if (!$deezer_data) {
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to search Spotify']);
+    echo json_encode(['error' => 'Failed to search Deezer']);
     exit;
 }
 
-// Convert Spotify response to iTunes-like format
+// Convert Deezer response to iTunes-like format
 $results = [];
-if (isset($spotify_data['albums']['items'])) {
-    foreach ($spotify_data['albums']['items'] as $album) {
+if (isset($deezer_data['data'])) {
+    foreach ($deezer_data['data'] as $album) {
         $artwork_url = '';
-        if (isset($album['images']) && count($album['images']) > 0) {
-            // Get the largest image
-            $artwork_url = $album['images'][0]['url'];
+        if (isset($album['cover_medium'])) {
+            $artwork_url = $album['cover_medium'];
         }
         
         $artist_name = '';
-        if (isset($album['artists']) && count($album['artists']) > 0) {
-            $artist_name = $album['artists'][0]['name'];
+        if (isset($album['artist'])) {
+            $artist_name = $album['artist']['name'];
         }
         
         $results[] = [
-            'collectionName' => $album['name'] ?? '',
+            'collectionName' => $album['title'] ?? '',
             'artistName' => $artist_name,
             'artworkUrl100' => $artwork_url,
             'collectionId' => $album['id'] ?? '',
-            'artistId' => isset($album['artists'][0]['id']) ? $album['artists'][0]['id'] : '',
+            'artistId' => isset($album['artist']['id']) ? $album['artist']['id'] : '',
         ];
     }
 }

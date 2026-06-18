@@ -30,7 +30,7 @@ try {
     setcookie('session_token', $sessionToken, time() +$_30days , "/"); 
     header('Location: /pages/dashboard.php');
 } catch (\Throwable $th) {
-    if ($env_type) {
+    if (env_type()=="dev") {
         echo $th;
     }
 }
