@@ -38,701 +38,399 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex">
-    <meta name="theme-color" content="#09090A">
+    <meta name="theme-color" content="#F1E9DA">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="../img/logo.ico">
     <title><?= htmlspecialchars($site_title) ?> — Mon Musée</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- No link to styles.css — all needed styles are in the block below -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=EB+Garamond:ital,wght@0,400..600;1,400..600&display=swap" rel="stylesheet">
+    <!-- Charte « Salon Doré » — styles autonomes -->
     <style>
-        /* ─── RESET OVERRIDES ─── */
         *, *::before, *::after { box-sizing: border-box; }
 
         :root {
-            --ink:    #09090A;
-            --ink-2:  #111113;
-            --ivory:  #F0EBE3;
-            --copper: #C87941;
-            --line:   rgba(240, 235, 227, 0.1);
-            --muted:  rgba(240, 235, 227, 0.45);
-            --font-display: 'Bebas Neue', sans-serif;
-            --font-body:    'Space Grotesk', sans-serif;
+            --craie:#F1E9DA; --velin:#FBF6EC; --stuc:#E5DAC4; --marbre:#D8D2C4;
+            --sepia:#2B2118; --sepia-doux:#5A4B38; --muted:rgba(43,33,24,.45);
+            --or:#B5912F; --or-clair:#E6C86E; --or-ombre:#856321;
+            --grenat:#7A2233; --grenat-fonce:#511522;
+            --bleu-nuit:#213A4C; --patine:#6E8275;
+            --filet:rgba(43,33,24,.12); --filet-or:rgba(181,145,47,.35);
+            --ombre-cadre:rgba(43,33,24,.18); --halo:rgba(230,200,110,.18);
+            --r-cartel:2px; --r-sm:6px; --r-cartouche:14px; --r-panneau:26px; --r-medaillon:999px;
+            --dorure:linear-gradient(135deg,#856321,#B5912F 38%,#E6C86E 55%,#B5912F 72%,#856321);
+            --velours:linear-gradient(180deg,#7A2233,#5E1A28);
+            --verriere:radial-gradient(125% 90% at 50% -8%,#FBF6EC 0%,#F1E9DA 45%,#E5DAC4 100%);
+            --font-display:'Fraunces',serif;
+            --font-body:'EB Garamond',serif;
         }
 
         body {
             font-family: var(--font-body);
-            background: var(--ink);
-            color: var(--ivory);
+            background: var(--craie);
+            background-image: var(--verriere);
+            background-attachment: fixed;
+            color: var(--sepia);
             overflow-x: hidden;
             cursor: none;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
         }
 
         body::after {
             content: '';
             position: fixed; inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.045;
+            mix-blend-mode: multiply;
             pointer-events: none;
             z-index: 9990;
         }
 
-        h1, h2, h3 { margin: 0; }
+        h1, h2, h3, h4 { margin: 0; }
         p { margin: 0; }
         a { text-decoration: none; }
         button { cursor: none; border: none; background: none; font-family: var(--font-body); }
 
-        /* ─── CUSTOM CURSOR ─── */
+        /* ─── CURSEUR : FEUILLE D'OR + LAURIER ─── */
         .cursor {
-            position: fixed;
-            width: 7px; height: 7px;
-            background: var(--copper);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
+            position: fixed; width: 9px; height: 9px;
+            background: var(--or); border-radius: 1px;
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%) rotate(45deg);
+            transition: width .2s, height .2s, background .2s;
         }
         .cursor-ring {
-            position: fixed;
-            width: 38px; height: 38px;
-            border: 1px solid rgba(200, 121, 65, 0.5);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
+            position: fixed; width: 36px; height: 36px;
+            border: 1px solid var(--filet-or); border-radius: 50%;
+            pointer-events: none; z-index: 9998;
             transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s, border-color 0.3s;
+            transition: width .3s, height .3s, border-color .3s;
         }
-        .cursor--hover { background: var(--ivory); width: 12px; height: 12px; }
-        .cursor-ring--hover { width: 56px; height: 56px; border-color: rgba(240,235,227,0.25); }
+        .cursor--hover { background: var(--grenat); width: 14px; height: 14px; }
+        .cursor-ring--hover { width: 56px; height: 56px; border-color: rgba(181,145,47,.6); }
 
-        /* ─── HEADER ─── */
+        /* ─── HEADER / VITRINE ─── */
         .dash-header {
-            position: fixed; top: 0; left: 0; right: 0;
-            z-index: 200;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.75rem 2.5rem;
-            transition: padding 0.4s, background 0.4s, border-color 0.4s;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.6rem 2.5rem;
+            transition: padding .4s, background .4s, border-color .4s;
         }
         .dash-header.scrolled {
-            padding: 1rem 2.5rem;
-            background: rgba(9, 9, 10, 0.9);
-            backdrop-filter: blur(18px);
-            border-bottom: 1px solid var(--line);
+            padding: .9rem 2.5rem;
+            background: rgba(251,246,236,.82);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--filet-or);
         }
-
         .dash-logo {
-            font-family: var(--font-display);
-            font-size: 1.3rem;
-            letter-spacing: 0.2em;
-            color: var(--ivory);
-            text-decoration: none;
-            transition: opacity 0.2s;
+            display: inline-flex; align-items: center; gap: .55rem;
+            font-family: var(--font-display); font-weight: 600;
+            font-size: 1.35rem; letter-spacing: 0.16em;
+            color: var(--sepia); text-decoration: none; transition: opacity .2s;
         }
-        .dash-logo:hover { opacity: 0.5; }
+        .dash-logo:hover { opacity: .6; }
+        .dash-logo .lys { width: 16px; height: 20px; color: var(--or); }
 
         .dash-logout {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            color: rgba(240,235,227,0.5);
-            padding: 0.55rem 1.1rem;
-            border: 1px solid rgba(240,235,227,0.15);
-            border-radius: 999px;
-            transition: all 0.25s;
-            cursor: none;
+            display: inline-flex; align-items: center; gap: .4rem;
+            font-size: .9rem; font-weight: 600; letter-spacing: 0.04em;
+            color: var(--sepia-doux);
+            padding: .55rem 1.1rem;
+            border: 1px solid var(--filet); border-radius: var(--r-medaillon);
+            transition: all .25s; cursor: none;
         }
-        .dash-logout:hover {
-            color: var(--ivory);
-            border-color: rgba(240,235,227,0.4);
-            background: rgba(240,235,227,0.06);
-        }
+        .dash-logout:hover { color: var(--velin); background: var(--grenat); border-color: var(--grenat); }
 
-        /* ─── PROFILE SECTION ─── */
+        /* ─── PORTRAIT / IDENTITÉ ─── */
         .dash-profile {
-            padding: 10rem 2.5rem 5rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: 3.5rem;
-            align-items: start;
-            border-bottom: 1px solid var(--line);
+            padding: 10rem 2.5rem 4.5rem; max-width: 1400px; margin: 0 auto;
+            display: grid; grid-template-columns: 150px 1fr; gap: 3.5rem; align-items: start;
+            border-bottom: 1px solid var(--filet-or);
         }
-
-        .dash-avatar-wrap { padding-top: 0.5rem; }
-
+        .dash-avatar-wrap { padding-top: .5rem; }
         .profile-avatar {
-            width: 120px; height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
-            border: 2px solid rgba(200,121,65,0.3);
-            transition: border-color 0.3s;
+            width: 130px; height: 130px; border-radius: 50%; object-fit: cover; display: block;
+            border: 3px solid var(--velin);
+            box-shadow: 0 0 0 2px var(--or), 0 14px 34px var(--ombre-cadre);
+            transition: box-shadow .3s, filter .3s;
         }
-        .profile-avatar:hover { border-color: var(--copper); }
+        .profile-avatar:hover { box-shadow: 0 0 0 2px var(--or-clair), 0 16px 40px var(--ombre-cadre); filter: brightness(1.04); }
 
         .dash-profile-right { display: flex; flex-direction: column; gap: 1.75rem; }
-
         .dash-name {
-            font-family: var(--font-display);
-            font-size: clamp(3rem, 7vw, 6.5rem);
-            line-height: 0.85;
-            color: var(--ivory);
-            letter-spacing: -0.01em;
+            font-family: var(--font-display); font-weight: 600;
+            font-size: clamp(3rem, 7vw, 6rem); line-height: 0.9; color: var(--sepia); letter-spacing: -0.01em;
         }
-
-        .dash-pseudo-wrap {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-top: 0.5rem;
-        }
-
-        /* JS queries .pseudo-display — keep class */
+        .dash-pseudo-wrap { display: flex; align-items: center; gap: .75rem; margin-top: .6rem; }
+        /* JS queries .pseudo-display — plaque nominative */
         .pseudo-display {
-            font-family: var(--font-body);
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
-            color: var(--copper);
-            background: rgba(200,121,65,0.1);
-            border: 1px solid rgba(200,121,65,0.3);
-            padding: 0.3rem 0.75rem;
-            border-radius: 999px;
+            font-family: var(--font-body); font-size: .85rem; font-weight: 600; letter-spacing: 0.08em;
+            color: var(--or-ombre); background: var(--velin);
+            border: 1px solid var(--or); padding: .3rem .8rem; border-radius: var(--r-medaillon);
         }
 
-        /* ─── BIO ─── */
+        /* ─── BIO / CARTEL MURAL ─── */
         .dash-bio { max-width: 600px; }
-
-        .dash-bio-top {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.6rem;
-        }
+        .dash-bio-top { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; }
         .dash-bio-label {
-            font-size: 0.65rem;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: rgba(240,235,227,0.3);
+            font-size: .72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--or-ombre);
         }
-
         /* JS queries #editBioBtn */
         .btn-edit {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.72rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            color: var(--muted);
-            padding: 0.25rem 0.6rem;
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            transition: all 0.2s;
-            cursor: none;
-            background: none;
+            display: inline-flex; align-items: center; gap: .25rem;
+            font-size: .8rem; font-weight: 600; letter-spacing: 0.04em; color: var(--sepia-doux);
+            padding: .25rem .7rem; border: 1px solid var(--filet); border-radius: var(--r-medaillon);
+            transition: all .2s; cursor: none; background: none;
         }
-        .btn-edit:hover { color: var(--ivory); border-color: rgba(240,235,227,0.3); }
+        .btn-edit:hover { color: var(--or-ombre); border-color: var(--filet-or); }
         .btn-edit svg { width: 12px; height: 12px; }
-
         /* JS queries #bioContent */
-        .bio-content p {
-            font-size: 1.05rem;
-            line-height: 1.7;
-            color: rgba(240,235,227,0.65);
-            margin: 0;
-        }
-        .dash-bio-empty { font-style: italic; opacity: 0.4; }
+        .bio-content p { font-size: 1.1rem; line-height: 1.75; color: var(--sepia-doux); margin: 0; }
+        .dash-bio-empty { font-style: italic; opacity: .55; }
 
-        /* JS queries #bioEditForm, #bioTextarea, #saveBioBtn, #cancelBioBtn */
         .bio-textarea {
-            width: 100%;
-            min-height: 90px;
-            padding: 0.9rem 1rem;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 8px;
-            color: var(--ivory);
-            font-family: var(--font-body);
-            font-size: 1rem;
-            line-height: 1.6;
-            resize: vertical;
-            transition: border-color 0.2s;
-            display: block;
-            margin-bottom: 0.75rem;
+            width: 100%; min-height: 90px; padding: .9rem 1rem;
+            background: var(--velin); border: 1px solid var(--filet); border-radius: var(--r-sm);
+            color: var(--sepia); font-family: var(--font-body); font-size: 1.05rem; line-height: 1.6;
+            resize: vertical; transition: border-color .2s, box-shadow .2s; display: block; margin-bottom: .75rem;
         }
-        .bio-textarea:focus { outline: none; border-color: var(--copper); }
-        .bio-textarea::placeholder { color: rgba(240,235,227,0.3); }
+        .bio-textarea:focus { outline: none; border-color: var(--or); box-shadow: 0 0 0 3px var(--halo); }
+        .bio-textarea::placeholder { color: var(--muted); }
+        .bio-actions { display: flex; gap: .75rem; }
 
-        .bio-actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        /* ─── VISIBILITY / SETTINGS ─── */
-        .dash-settings {
-            border-bottom: 1px solid var(--line);
-            background: var(--ink-2);
-        }
-        .dash-settings-inner {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1.25rem 2.5rem;
-        }
-        .dash-settings-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1.5rem;
-        }
+        /* ─── BANDEAU DE RÉGIE / VISIBILITÉ ─── */
+        .dash-settings { border-bottom: 1px solid var(--filet-or); border-top: 1px solid var(--filet-or); background: var(--stuc); }
+        .dash-settings-inner { max-width: 1400px; margin: 0 auto; padding: 1.25rem 2.5rem; }
+        .dash-settings-row { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; }
         .dash-settings-left { display: flex; align-items: center; gap: 1.5rem; }
-
-        .dash-settings-title {
-            font-size: 0.72rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
+        .dash-settings-title { font-size: .72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--or-ombre); }
         /* JS queries #shareOwnProfileBtn */
         .dash-share-btn {
-            font-size: 0.72rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            color: var(--copper);
-            padding: 0.3rem 0.75rem;
-            border: 1px solid rgba(200,121,65,0.3);
-            border-radius: 999px;
-            transition: all 0.2s;
-            cursor: none;
+            font-size: .8rem; font-weight: 600; letter-spacing: 0.04em; color: var(--or-ombre);
+            padding: .3rem .8rem; border: 1px solid var(--filet-or); border-radius: var(--r-medaillon);
+            background: var(--velin); transition: all .2s; cursor: none;
         }
-        .dash-share-btn:hover { background: rgba(200,121,65,0.1); border-color: var(--copper); }
-
+        .dash-share-btn:hover { background: var(--craie); border-color: var(--or); box-shadow: 0 0 0 3px var(--halo); }
         .dash-visibility-right { display: flex; align-items: center; gap: 1rem; }
-
-        /* JS queries .switch-label and .switch-text — keep classes */
-        .switch-label {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--muted);
-        }
-        .switch-label svg { width: 14px; height: 14px; }
-
-        /* Toggle switch — JS queries #visibilityToggle */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px; height: 26px;
-            flex-shrink: 0;
-        }
+        /* JS queries .switch-label, .switch-text */
+        .switch-label { display: flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 600; color: var(--sepia-doux); }
+        .switch-label svg { width: 14px; height: 14px; color: var(--or-ombre); }
+        /* Interrupteur médaillon — JS queries #visibilityToggle */
+        .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: none;
-            inset: 0;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 999px;
-            transition: 0.3s;
+            position: absolute; cursor: none; inset: 0;
+            background: var(--velin); border: 1px solid var(--filet-or); border-radius: var(--r-medaillon); transition: .3s;
         }
         .slider::before {
-            content: '';
-            position: absolute;
-            width: 18px; height: 18px;
-            left: 3px; bottom: 3px;
-            background: rgba(240,235,227,0.4);
-            border-radius: 50%;
-            transition: 0.3s;
+            content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px;
+            background: var(--marbre); border-radius: 50%; transition: .3s; box-shadow: 0 1px 3px var(--ombre-cadre);
         }
-        input:checked + .slider { background: var(--copper); border-color: var(--copper); }
-        input:checked + .slider::before { transform: translateX(22px); background: var(--ivory); }
+        input:checked + .slider { background: var(--velours); border-color: var(--grenat-fonce); }
+        input:checked + .slider::before { transform: translateX(22px); background: var(--dorure); }
 
-        /* ─── ALBUMS MAIN ─── */
-        .dash-main {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2.5rem 6rem;
-        }
-
-        /* ─── CATEGORY SECTION ─── */
-        .dash-category {
-            padding: 3.5rem 0;
-            border-bottom: 1px solid var(--line);
-        }
+        /* ─── SALLES D'EXPOSITION ─── */
+        .dash-main { max-width: 1400px; margin: 0 auto; padding: 0 2.5rem 6rem; }
+        .dash-category { padding: 3.5rem 0; border-bottom: 1px solid var(--filet); }
         .dash-category:last-child { border-bottom: none; }
-
-        .dash-category-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 2rem;
-            gap: 1rem;
-        }
-
+        .dash-category-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; gap: 1rem; }
         .dash-category-title {
-            font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
-            line-height: 0.85;
-            color: var(--ivory);
-            letter-spacing: -0.01em;
+            font-family: var(--font-display); font-weight: 600;
+            font-size: clamp(2.25rem, 5vw, 4rem); line-height: 0.9; color: var(--sepia); letter-spacing: -0.01em;
+            position: relative; padding-top: 1.4rem;
         }
-
+        /* Coquille rocaille au-dessus du titre de salle */
+        .dash-category-title::before {
+            content: '\10086'; position: absolute; top: 0; left: 0;
+            font-size: 1rem; color: var(--or);
+        }
         /* JS queries [id^="add"][id$="Btn"] */
         .dash-add-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.82rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            color: var(--ivory);
-            padding: 0.6rem 1.1rem 0.6rem 1.3rem;
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            transition: all 0.25s;
-            cursor: none;
-            white-space: nowrap;
-            flex-shrink: 0;
+            display: inline-flex; align-items: center; gap: .5rem;
+            font-size: .85rem; font-weight: 600; letter-spacing: 0.04em; color: var(--sepia);
+            padding: .6rem 1.1rem .6rem 1.3rem;
+            border: 1px solid var(--filet-or); border-radius: var(--r-medaillon);
+            background: var(--velin); transition: all .25s; cursor: none; white-space: nowrap; flex-shrink: 0;
         }
-        .dash-add-btn:hover {
-            background: var(--copper);
-            border-color: var(--copper);
-            color: var(--ivory);
-        }
+        .dash-add-btn:hover { background: var(--grenat); border-color: var(--grenat); color: var(--velin); }
         .dash-add-circle {
-            width: 22px; height: 22px;
-            background: rgba(240,235,227,0.12);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem;
-            line-height: 1;
-            transition: background 0.25s;
+            width: 22px; height: 22px; background: var(--dorure); color: var(--velin);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; line-height: 1; transition: background .25s;
         }
-        .dash-add-btn:hover .dash-add-circle { background: rgba(9,9,10,0.2); }
 
-        /* ─── ALBUM SCROLL ─── */
-        /* JS may reference .albums-horizontal-scroll — keep class */
+        /* ─── CIMAISE (SCROLL) ─── */
         .albums-horizontal-scroll {
-            display: flex;
-            gap: 1rem;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding-bottom: 0.75rem;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(200,121,65,0.3) transparent;
+            display: flex; gap: 1.25rem; overflow-x: auto; overflow-y: hidden; padding-bottom: .75rem;
+            scrollbar-width: thin; scrollbar-color: var(--or) transparent;
         }
         .albums-horizontal-scroll::-webkit-scrollbar { height: 3px; }
-        .albums-horizontal-scroll::-webkit-scrollbar-thumb { background: rgba(200,121,65,0.3); border-radius: 99px; }
+        .albums-horizontal-scroll::-webkit-scrollbar-thumb { background: var(--dorure); border-radius: 99px; }
 
-        /* ─── ALBUM CARDS ─── */
-        /* JS references .album-card-horizontal for structure */
-        .album-card-horizontal {
-            flex: 0 0 180px;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        /* JS references .album-cover */
+        /* ─── ŒUVRES ENCADRÉES ─── */
+        .album-card-horizontal { flex: 0 0 180px; display: flex; flex-direction: column; gap: .6rem; }
+        /* Cadre doré à gorge + biseau */
         .album-cover {
-            position: relative;
-            width: 180px; height: 180px;
-            border-radius: 4px;
-            overflow: hidden;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            flex-shrink: 0;
+            position: relative; width: 180px; height: 180px; border-radius: var(--r-cartel); overflow: hidden;
+            background: var(--stuc); flex-shrink: 0;
+            border: 5px solid var(--velin);
+            box-shadow: 0 0 0 2px var(--or), 0 14px 30px var(--ombre-cadre), inset 0 2px 6px rgba(0,0,0,.18);
+            transition: box-shadow .35s, filter .35s;
         }
-        .album-cover img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
-        }
-        .album-card-horizontal:hover .album-cover img { transform: scale(1.04); }
+        .album-card-horizontal:hover .album-cover { box-shadow: 0 0 0 2px var(--or-clair), 0 18px 40px var(--ombre-cadre); filter: brightness(1.05) saturate(1.04); }
+        .album-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(0.4,0,0.2,1); }
 
+        /* Cartel posé en bas du cadre */
         .album-cover-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(9,9,10,0.92) 0%, rgba(9,9,10,0.4) 50%, transparent 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 0.75rem;
-            opacity: 0;
-            transition: opacity 0.3s;
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(43,33,24,.88) 0%, rgba(43,33,24,.35) 48%, transparent 100%);
+            display: flex; flex-direction: column; justify-content: flex-end; padding: .75rem;
+            opacity: 0; transition: opacity .3s;
         }
         .album-card-horizontal:hover .album-cover-overlay { opacity: 1; }
-
         .album-cover-overlay .album-title {
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: var(--ivory);
-            margin: 0 0 0.15rem;
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            font-family: var(--font-body); font-size: .9rem; font-weight: 600; color: var(--velin); margin: 0 0 .15rem; line-height: 1.3;
+            display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
-        .album-cover-overlay .album-artist {
-            font-size: 0.72rem;
-            color: rgba(240,235,227,0.6);
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .album-cover-overlay .album-artist { font-style: italic; font-size: .8rem; color: rgba(251,246,236,.7); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* JS references .remove-album-btn */
+        /* JS references .remove-album-btn — sceau de cire */
         .remove-album-btn {
-            position: absolute;
-            top: 0.5rem; right: 0.5rem;
-            width: 26px; height: 26px;
-            background: rgba(9,9,10,0.7);
-            border: 1px solid rgba(240,235,227,0.2);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s, background 0.2s;
-            cursor: none;
+            position: absolute; top: .5rem; right: .5rem; width: 26px; height: 26px;
+            background: rgba(43,33,24,.7); border: 1px solid var(--filet-or); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; opacity: 0;
+            transition: opacity .2s, background .2s, border-color .2s; cursor: none;
         }
-        .remove-album-btn svg { width: 12px; height: 12px; color: var(--ivory); }
+        .remove-album-btn svg { width: 12px; height: 12px; color: var(--velin); }
         .album-card-horizontal:hover .remove-album-btn { opacity: 1; }
-        .remove-album-btn:hover { background: #ef4444; border-color: #ef4444; }
+        .remove-album-btn:hover { background: var(--grenat); border-color: var(--grenat); }
 
-        /* Below-card info — visible on mobile / fallback */
         .album-info-horizontal { display: none; }
+        .album-title { font-family: var(--font-body); font-size: .9rem; font-weight: 600; color: var(--sepia); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .album-artist { font-style: italic; font-size: .8rem; color: var(--sepia-doux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* JS references .album-title, .album-artist (for renderSuggestions) */
-        .album-title {
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--ivory);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .album-artist {
-            font-size: 0.72rem;
-            color: var(--muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        /* ─── CIMAISE VIDE ─── */
+        .no-albums { padding: 3rem 0; display: flex; flex-direction: column; align-items: center; gap: .75rem; color: var(--muted); }
+        .no-albums svg, .no-albums i { width: 2rem; height: 2rem; color: var(--filet-or); }
+        .no-albums p { font-size: .9rem; letter-spacing: 0.06em; text-transform: uppercase; }
 
-        /* ─── NO ALBUMS ─── */
-        /* JS references .no-albums */
-        .no-albums {
-            padding: 3rem 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-            color: rgba(240,235,227,0.2);
-        }
-        .no-albums svg, .no-albums i { width: 2rem; height: 2rem; color: rgba(200,121,65,0.25); }
-        .no-albums p { font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; }
-
-        /* ─── FOOTER ─── */
+        /* ─── SOCLE (FOOTER) ─── */
         .dash-footer {
-            border-top: 1px solid var(--line);
-            padding: 1.75rem 2.5rem;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.72rem;
-            letter-spacing: 0.06em;
-            color: rgba(240,235,227,0.2);
-            max-width: 1400px;
-            margin: 0 auto;
+            border-top: 1px solid var(--filet-or); background: var(--marbre);
+            padding: 1.75rem 2.5rem; display: flex; justify-content: space-between;
+            font-size: .8rem; letter-spacing: 0.04em; color: var(--sepia-doux); max-width: 1400px; margin: 0 auto;
         }
 
-        /* ─── SHARED BUTTONS (used by bio form) ─── */
+        /* ─── BOUTONS PARTAGÉS ─── */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.6rem 1.2rem;
-            font-family: var(--font-body);
-            font-size: 0.82rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            border-radius: 999px;
-            transition: all 0.25s;
-            cursor: none;
-            white-space: nowrap;
+            display: inline-flex; align-items: center; gap: .4rem; padding: .65rem 1.3rem;
+            font-family: var(--font-body); font-size: .9rem; font-weight: 600; letter-spacing: 0.02em;
+            border-radius: var(--r-medaillon); transition: all .25s; cursor: none; white-space: nowrap; border: 1px solid transparent;
         }
         .btn svg { width: 14px; height: 14px; }
-        .btn-primary { background: var(--copper); color: var(--ivory); }
-        .btn-primary:hover { background: #d88947; transform: scale(1.02); }
-        .btn-secondary { background: rgba(255,255,255,0.08); color: rgba(240,235,227,0.7); border: 1px solid var(--line); }
-        .btn-secondary:hover { background: rgba(255,255,255,0.14); color: var(--ivory); }
+        .btn-primary { background: var(--velours); color: var(--velin); border-color: var(--grenat-fonce); }
+        .btn-primary:hover { filter: brightness(1.08); transform: scale(1.02); }
+        .btn-secondary { background: var(--velin); color: var(--sepia-doux); border: 1px solid var(--filet); }
+        .btn-secondary:hover { border-color: var(--filet-or); color: var(--sepia); }
 
-        /* ─── MODAL OVERRIDES ─── */
-        /* The pseudo modal and add-album modals use classes from styles.css — just tweak visuals */
+        /* ─── VITRINE / MODALES ─── */
         .modal {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(12px);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
+            position: fixed; inset: 0; background: rgba(43,33,24,.55); backdrop-filter: blur(10px);
+            z-index: 1000; display: none; align-items: center; justify-content: center; padding: 1.5rem;
         }
         .modal[style*="flex"] { display: flex !important; }
-
-        .modal-content {
-            background: #111113;
-            border: 1px solid rgba(200,121,65,0.2);
-            border-radius: 12px;
-            padding: 2.5rem;
-            max-width: 460px;
-            width: 100%;
+        .modal-content, .add-album-content {
+            position: relative; background: var(--velin); border: 1px solid var(--or);
+            border-radius: var(--r-panneau); padding: 2.5rem; max-width: 460px; width: 100%;
+            box-shadow: 0 30px 80px rgba(43,33,24,.45);
         }
-        .modal-header h3 { font-family: var(--font-display); font-size: 2rem; color: var(--ivory); letter-spacing: 0.05em; margin-bottom: 0.4rem; }
-        .modal-header p { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.75rem; }
+        /* Volutes d'angle (cartouche) */
+        .modal-content::before, .modal-content::after,
+        .add-album-content::before, .add-album-content::after {
+            content: ''; position: absolute; top: 12px; width: 34px; height: 34px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M38 2C18 2 2 18 2 38' fill='none' stroke='%23B5912F' stroke-width='1.4'/%3E%3Cpath d='M2 38c0-8 6-14 14-14 6 0 10 4 10 9' fill='none' stroke='%23B5912F' stroke-width='1.4'/%3E%3Ccircle cx='29' cy='11' r='2' fill='%23B5912F'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-size: contain; opacity: .8; pointer-events: none;
+        }
+        .modal-content::before, .add-album-content::before { left: 12px; }
+        .modal-content::after, .add-album-content::after { right: 12px; transform: scaleX(-1); }
 
-        .input-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
-        .input-group label { font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+        .modal-header h3 { font-family: var(--font-display); font-weight: 600; font-size: 2rem; color: var(--sepia); letter-spacing: 0.01em; margin-bottom: .4rem; text-align: center; }
+        .modal-header p { font-size: .95rem; color: var(--sepia-doux); margin-bottom: 1.75rem; text-align: center; }
+        .input-group { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.25rem; }
+        .input-group label { font-size: .72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--or-ombre); }
         .pseudo-input-container { position: relative; display: flex; align-items: center; }
-        .pseudo-prefix { position: absolute; left: 1rem; color: var(--copper); font-weight: 700; z-index: 1; }
-
+        .pseudo-prefix { position: absolute; left: 1rem; color: var(--or); font-family: var(--font-display); font-weight: 700; z-index: 1; }
         #pseudoInput {
-            width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2rem;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 8px;
-            color: var(--ivory);
-            font-family: var(--font-body);
-            font-size: 1rem;
-            transition: border-color 0.2s;
+            width: 100%; padding: .75rem 1rem .75rem 2rem; background: var(--craie);
+            border: 1px solid var(--filet); border-radius: var(--r-sm); color: var(--sepia);
+            font-family: var(--font-body); font-size: 1.05rem; transition: border-color .2s, box-shadow .2s;
         }
-        #pseudoInput:focus { outline: none; border-color: var(--copper); }
-        #pseudoInput::placeholder { color: rgba(240,235,227,0.25); }
+        #pseudoInput:focus { outline: none; border-color: var(--or); box-shadow: 0 0 0 3px var(--halo); }
+        #pseudoInput::placeholder { color: var(--muted); }
+        .feedback { font-size: .82rem; min-height: 18px; display: flex; align-items: center; gap: .3rem; }
+        .feedback.available { color: var(--patine); }
+        .feedback.unavailable { color: var(--grenat); }
+        .feedback.checking { color: var(--sepia-doux); }
+        .modal-actions { display: flex; gap: .75rem; margin-top: 1.5rem; justify-content: center; }
 
-        .feedback { font-size: 0.78rem; min-height: 18px; display: flex; align-items: center; gap: 0.3rem; }
-        .feedback.available { color: #10b981; }
-        .feedback.unavailable { color: #ef4444; }
-        .feedback.checking { color: rgba(240,235,227,0.5); }
-
-        .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
-
-        /* ─── ADD ALBUM MODAL (created by JS) ─── */
+        /* ─── VITRINE AJOUT D'ALBUM (créée par JS) ─── */
         .add-album-modal {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(12px);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
+            position: fixed; inset: 0; background: rgba(43,33,24,.55); backdrop-filter: blur(10px);
+            z-index: 1000; display: none; align-items: center; justify-content: center; padding: 1.5rem;
         }
         .add-album-modal.show { display: flex; }
-        .add-album-content {
-            background: #111113;
-            border: 1px solid rgba(200,121,65,0.2);
-            border-radius: 12px;
-            padding: 2.5rem;
-            max-width: 520px;
-            width: 100%;
-        }
-        .add-album-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-        }
-        .add-album-header h3 { font-family: var(--font-display); font-size: 2rem; color: var(--ivory); letter-spacing: 0.05em; }
-        .close-btn { color: var(--muted); font-size: 1.25rem; transition: color 0.2s; cursor: none; }
-        .close-btn:hover { color: var(--ivory); }
+        .add-album-content { max-width: 520px; }
+        .add-album-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+        .add-album-header h3 { font-family: var(--font-display); font-weight: 600; font-size: 2rem; color: var(--sepia); letter-spacing: 0.01em; }
+        .close-btn { color: var(--sepia-doux); font-size: 1.25rem; transition: color .2s, transform .3s; cursor: none; }
+        .close-btn:hover { color: var(--grenat); transform: rotate(90deg); }
 
         .album-input-group { position: relative; margin-bottom: 1.25rem; }
         .album-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 8px;
-            color: var(--ivory) !important;
-            font-family: var(--font-body);
-            font-size: 1rem;
-            height: auto;
-            transition: border-color 0.2s;
+            width: 100%; padding: .75rem 1rem; background: var(--craie);
+            border: 1px solid var(--filet); border-radius: var(--r-sm); color: var(--sepia) !important;
+            font-family: var(--font-body); font-size: 1.05rem; height: auto; transition: border-color .2s, box-shadow .2s;
         }
-        .album-input:focus { outline: none; border-color: var(--copper); }
-        .album-input::placeholder { color: rgba(240,235,227,0.3); }
+        .album-input:focus { outline: none; border-color: var(--or); box-shadow: 0 0 0 3px var(--halo); }
+        .album-input::placeholder { color: var(--muted); }
 
+        /* Réserve du musée (suggestions) */
         .album-suggestions {
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0; right: 0;
-            z-index: 30;
-            background: #1a1a1c;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            max-height: 300px;
-            overflow: auto;
+            position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30;
+            background: var(--velin); border: 1px solid var(--filet-or); border-radius: var(--r-sm);
+            max-height: 300px; overflow: auto; box-shadow: 0 16px 40px var(--ombre-cadre);
         }
-        .album-suggestion-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.85rem;
-            cursor: pointer;
-            transition: background 0.15s;
+        .album-suggestion-item { display: flex; align-items: center; gap: .75rem; padding: .6rem .85rem; cursor: pointer; transition: background .15s; }
+        .album-suggestion-item:hover { background: var(--craie); }
+        .album-suggestion-cover {
+            width: 42px; height: 42px; border-radius: var(--r-cartel); overflow: hidden; background: var(--stuc);
+            flex-shrink: 0; border: 2px solid var(--velin); box-shadow: 0 0 0 1px var(--or);
         }
-        .album-suggestion-item:hover { background: rgba(255,255,255,0.05); }
-        .album-suggestion-cover { width: 40px; height: 40px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.06); flex-shrink: 0; }
         .album-suggestion-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .album-suggestion-cover i { width: 18px; height: 18px; color: var(--or); margin: 12px; }
         .album-suggestion-info { flex: 1; min-width: 0; }
-        .album-suggestion-title { font-size: 0.85rem; font-weight: 600; color: var(--ivory); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .album-suggestion-artist { font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .album-suggestion-select { color: var(--muted); display: flex; align-items: center; }
+        .album-suggestion-title { font-size: .9rem; font-weight: 600; color: var(--sepia); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .album-suggestion-artist { font-style: italic; font-size: .8rem; color: var(--sepia-doux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .album-suggestion-select { color: var(--or-ombre); display: flex; align-items: center; cursor: none; }
         .album-suggestion-select svg { width: 14px; height: 14px; }
-        .album-modal-actions { display: flex; gap: 0.75rem; }
+        .album-modal-actions { display: flex; gap: .75rem; }
 
-        /* ─── NOTIFICATIONS ─── */
+        /* ─── CARTELS VOLANTS (NOTIFICATIONS) ─── */
         .notification {
-            position: fixed;
-            top: 1.25rem; right: 1.25rem;
-            background: #111113;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 0.85rem 1.25rem;
-            color: var(--ivory);
-            font-size: 0.85rem;
-            font-weight: 500;
-            z-index: 9000;
-            transform: translateX(120%);
-            opacity: 0;
-            transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.35s;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            max-width: 320px;
+            position: fixed; top: 1.25rem; right: 1.25rem; background: var(--velin);
+            border: 1px solid var(--filet-or); border-radius: var(--r-sm); padding: .85rem 1.25rem;
+            color: var(--sepia); font-size: .9rem; font-weight: 500; z-index: 9000;
+            transform: translateX(120%); opacity: 0;
+            transition: transform .35s cubic-bezier(0.16,1,0.3,1), opacity .35s;
+            display: flex; align-items: center; gap: .75rem; max-width: 320px; box-shadow: 0 14px 36px var(--ombre-cadre);
         }
         .notification.show { transform: translateX(0); opacity: 1; }
-        .notification-success { border-left: 3px solid #10b981; }
-        .notification-error { border-left: 3px solid #ef4444; }
-        .notification-info { border-left: 3px solid var(--copper); }
-        .notification-close { background: none; border: none; color: var(--muted); cursor: none; margin-left: auto; display: flex; align-items: center; }
+        .notification-success { border-left: 3px solid var(--patine); }
+        .notification-error { border-left: 3px solid var(--grenat); }
+        .notification-info { border-left: 3px solid var(--or); }
+        .notification-close { background: none; border: none; color: var(--sepia-doux); cursor: none; margin-left: auto; display: flex; align-items: center; }
         .notification-close svg { width: 14px; height: 14px; }
-        .notification-close:hover { color: var(--ivory); }
+        .notification-close:hover { color: var(--grenat); }
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 768px) {
@@ -740,50 +438,36 @@
             .cursor, .cursor-ring { display: none; }
             button { cursor: pointer; }
             a { cursor: pointer; }
-
             .dash-header { padding: 1.25rem; }
-            .dash-header.scrolled { padding: 0.9rem 1.25rem; }
-
-            .dash-profile {
-                grid-template-columns: 1fr;
-                padding: 8rem 1.25rem 3rem;
-                gap: 1.75rem;
-            }
+            .dash-header.scrolled { padding: .9rem 1.25rem; }
+            .dash-profile { grid-template-columns: 1fr; padding: 8rem 1.25rem 3rem; gap: 1.75rem; }
             .dash-avatar-wrap { display: flex; align-items: center; gap: 1.25rem; }
-            .profile-avatar { width: 80px; height: 80px; }
-
+            .profile-avatar { width: 84px; height: 84px; }
             .dash-settings-inner { padding: 1rem 1.25rem; }
-            .dash-settings-row { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+            .dash-settings-row { flex-direction: column; align-items: flex-start; gap: .75rem; }
             .dash-settings-left { flex-wrap: wrap; }
-
             .dash-main { padding: 0 1.25rem 4rem; }
             .dash-category { padding: 2.5rem 0; }
             .dash-category-header { align-items: center; }
             .dash-category-title { font-size: clamp(2rem, 8vw, 3rem); }
-
             .album-card-horizontal { flex: 0 0 140px; }
             .album-cover { width: 140px; height: 140px; }
             .album-info-horizontal { display: block; }
-
-            .dash-footer { flex-direction: column; gap: 0.4rem; text-align: center; padding: 1.5rem 1.25rem; }
+            .dash-footer { flex-direction: column; gap: .4rem; text-align: center; padding: 1.5rem 1.25rem; }
         }
+        @media (max-width: 480px) { .dash-name { font-size: 2.75rem; } }
 
-        @media (max-width: 480px) {
-            .dash-name { font-size: 2.75rem; }
-        }
-
-        /* Animate-spin for JS loading states */
         .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <!-- Custom cursor -->
+    <!-- Curseur feuille d'or -->
     <div class="cursor" id="cursor"></div>
     <div class="cursor-ring" id="cursorRing"></div>
 
-    <!-- Music elements — hidden but kept for JS compatibility -->
+    <!-- Éléments décoratifs — cachés mais conservés pour la compatibilité JS -->
     <div class="music-elements" style="display:none;" aria-hidden="true">
         <i data-lucide="music" class="music-note"></i>
         <i data-lucide="music-2" class="music-note"></i>
@@ -793,14 +477,19 @@
 
     <!-- Header -->
     <header class="dash-header" id="header">
-        <a href="/" class="dash-logo">UNIVERSON</a>
+        <a href="/" class="dash-logo">
+            <svg class="lys" viewBox="0 0 24 30" fill="currentColor" aria-hidden="true">
+                <path d="M12 0c1.6 2.3 1.6 4.7 0 7-1.6-2.3-1.6-4.7 0-7zM12 7c2.4 1.2 3.6 3.2 3.4 6.2 2.2-1.4 4.4-1 6.6 1.2-3 .4-4.6 2-4.8 4.8-1.6-1.8-3.4-2.4-5.2-1.8v8.2c2-.4 3.8-.2 5.4 1.4H8.6c1.6-1.6 3.4-1.8 5.4-1.4v-8.2c-1.8-.6-3.6 0-5.2 1.8-.2-2.8-1.8-4.4-4.8-4.8 2.2-2.2 4.4-2.6 6.6-1.2C8.4 10.2 9.6 8.2 12 7z"/>
+            </svg>
+            UNIVERSON
+        </a>
         <button id="logoutBtn" class="dash-logout">
             <i data-lucide="log-out" style="width:13px;height:13px;"></i>
             Déconnexion
         </button>
     </header>
 
-    <!-- Profile -->
+    <!-- Portrait / Identité -->
     <section class="dash-profile">
         <div class="dash-avatar-wrap">
             <img src="<?= htmlspecialchars($user['picture'] ?? '') ?>" alt="Photo de profil" class="profile-avatar">
@@ -854,7 +543,7 @@
         </div>
     </section>
 
-    <!-- Settings / visibility — JS queries: #visibilityToggle, .switch-label, .switch-text, #shareOwnProfileBtn, .pseudo-display -->
+    <!-- Bandeau de régie / visibilité — JS queries: #visibilityToggle, .switch-label, .switch-text, #shareOwnProfileBtn, .pseudo-display -->
     <div class="dash-settings">
         <div class="dash-settings-inner">
             <div class="dash-settings-row">
@@ -885,7 +574,7 @@
         </div>
     </div>
 
-    <!-- Pseudo modal — JS queries: #pseudoModal, #pseudoInput, #pseudoFeedback, #savePseudoBtn, #cancelPseudoBtn -->
+    <!-- Vitrine pseudo — JS queries: #pseudoModal, #pseudoInput, #pseudoFeedback, #savePseudoBtn, #cancelPseudoBtn -->
     <div id="pseudoModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -915,7 +604,7 @@
         </div>
     </div>
 
-    <!-- Album Categories — JS queries [id^="add"][id$="Btn"] -->
+    <!-- Salles d'exposition — JS queries [id^="add"][id$="Btn"] -->
     <main class="dash-main">
         <?php foreach ($categories as $category):
             $categoryAlbums = $categoriesAlbums[$category['name']] ?? [];
@@ -966,7 +655,7 @@
             <?php else: ?>
             <div class="no-albums">
                 <i data-lucide="disc-3"></i>
-                <p>Aucun album dans cette catégorie</p>
+                <p>Salle en cours d'accrochage</p>
             </div>
             <?php endif; ?>
         </section>
@@ -981,7 +670,7 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="/js/app.js"></script>
     <script>
-        /* Custom cursor */
+        /* Curseur */
         const cur = document.getElementById('cursor');
         const ring = document.getElementById('cursorRing');
         if (cur && ring) {
@@ -1010,7 +699,7 @@
             });
         }
 
-        /* Sticky header */
+        /* Header collé */
         const header = document.getElementById('header');
         window.addEventListener('scroll', () => {
             header.classList.toggle('scrolled', window.scrollY > 60);

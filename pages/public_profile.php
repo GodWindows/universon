@@ -26,20 +26,30 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-        --ink:    #09090A;
-        --ink-2:  #111113;
-        --ivory:  #F0EBE3;
-        --copper: #C87941;
-        --line:   rgba(240, 235, 227, 0.1);
-        --muted:  rgba(240, 235, 227, 0.45);
+        --craie:#F1E9DA; --velin:#FBF6EC; --stuc:#E5DAC4; --marbre:#D8D2C4;
+        --sepia:#2B2118; --sepia-doux:#5A4B38; --muted:rgba(43,33,24,.45);
+        --or:#B5912F; --or-clair:#E6C86E; --or-ombre:#856321;
+        --grenat:#7A2233; --grenat-fonce:#511522;
+        --bleu-nuit:#213A4C; --patine:#6E8275;
+        --filet:rgba(43,33,24,.12); --filet-or:rgba(181,145,47,.35);
+        --ombre-cadre:rgba(43,33,24,.18); --halo:rgba(230,200,110,.18);
+        --r-cartel:2px; --r-sm:6px; --r-cartouche:14px; --r-panneau:26px; --r-medaillon:999px;
+        --dorure:linear-gradient(135deg,#856321,#B5912F 38%,#E6C86E 55%,#B5912F 72%,#856321);
+        --velours:linear-gradient(180deg,#7A2233,#5E1A28);
+        --verriere:radial-gradient(125% 90% at 50% -8%,#FBF6EC 0%,#F1E9DA 45%,#E5DAC4 100%);
+        --spot:radial-gradient(ellipse 55% 50% at 50% 42%,var(--halo) 0%,transparent 70%);
+        --font-display:'Fraunces',serif;
+        --font-body:'EB Garamond',serif;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-        font-family: 'Space Grotesk', sans-serif;
-        background: var(--ink);
-        color: var(--ivory);
+        font-family: var(--font-body);
+        background: var(--craie);
+        background-image: var(--verriere);
+        background-attachment: fixed;
+        color: var(--sepia);
         overflow-x: hidden;
         cursor: none;
     }
@@ -47,377 +57,268 @@
     body::after {
         content: '';
         position: fixed; inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-        opacity: 0.035;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+        opacity: 0.045;
+        mix-blend-mode: multiply;
         pointer-events: none;
         z-index: 9990;
     }
 
-    /* ─── CURSOR ── */
+    /* ─── CURSEUR : FEUILLE D'OR + LAURIER ── */
     .cursor {
-        position: fixed; width: 7px; height: 7px;
-        background: var(--copper);
-        border-radius: 50%;
+        position: fixed; width: 9px; height: 9px;
+        background: var(--or); border-radius: 1px;
         pointer-events: none; z-index: 9999;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) rotate(45deg);
     }
     .cursor-ring {
-        position: fixed; width: 38px; height: 38px;
-        border: 1px solid rgba(200,121,65,0.5);
-        border-radius: 50%;
+        position: fixed; width: 36px; height: 36px;
+        border: 1px solid var(--filet-or); border-radius: 50%;
         pointer-events: none; z-index: 9998;
         transform: translate(-50%, -50%);
-        transition: width 0.3s, height 0.3s, border-color 0.3s;
+        transition: width .3s, height .3s, border-color .3s;
     }
-    .cursor--hover { background: var(--ivory); width: 12px; height: 12px; }
-    .cursor-ring--hover { width: 56px; height: 56px; border-color: rgba(240,235,227,0.25); }
+    .cursor--hover { background: var(--grenat); width: 13px; height: 13px; }
+    .cursor-ring--hover { width: 54px; height: 54px; border-color: rgba(181,145,47,.6); }
 
-    /* ─── HEADER ── */
+    /* ─── HEADER / VITRINE ── */
     .pp-header {
-        position: fixed; top: 0; left: 0; right: 0;
-        z-index: 200;
+        position: fixed; top: 0; left: 0; right: 0; z-index: 200;
         display: flex; justify-content: space-between; align-items: center;
-        padding: 1.75rem 2.5rem;
-        transition: padding 0.4s, background 0.4s, border-color 0.4s;
+        padding: 1.6rem 2.5rem;
+        transition: padding .4s, background .4s, border-color .4s;
     }
     .pp-header.scrolled {
-        padding: 1rem 2.5rem;
-        background: rgba(9,9,10,0.9);
-        backdrop-filter: blur(18px);
-        border-bottom: 1px solid var(--line);
+        padding: .9rem 2.5rem;
+        background: rgba(251,246,236,.84);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--filet-or);
     }
     .pp-logo {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 1.3rem; letter-spacing: 0.2em;
-        color: var(--ivory); text-decoration: none;
-        transition: opacity 0.2s;
+        display: inline-flex; align-items: center; gap: .55rem;
+        font-family: var(--font-display); font-weight: 600;
+        font-size: 1.35rem; letter-spacing: 0.16em;
+        color: var(--sepia); text-decoration: none; transition: opacity .2s;
     }
-    .pp-logo:hover { opacity: 0.5; }
+    .pp-logo:hover { opacity: .6; }
+    .pp-logo .lys { width: 16px; height: 20px; color: var(--or); }
 
     .pp-logout {
-        display: inline-flex; align-items: center; gap: 0.4rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
-        color: rgba(240,235,227,0.5);
-        padding: 0.55rem 1.1rem;
-        border: 1px solid rgba(240,235,227,0.15);
-        border-radius: 999px;
-        background: none;
-        transition: all 0.25s; cursor: none;
+        display: inline-flex; align-items: center; gap: .4rem;
+        font-family: var(--font-body); font-size: .9rem; font-weight: 600; letter-spacing: 0.04em;
+        color: var(--sepia-doux); padding: .55rem 1.1rem;
+        border: 1px solid var(--filet); border-radius: var(--r-medaillon);
+        background: none; transition: all .25s; cursor: none;
     }
-    .pp-logout:hover { color: var(--ivory); border-color: rgba(240,235,227,0.4); background: rgba(240,235,227,0.06); }
+    .pp-logout:hover { color: var(--velin); background: var(--grenat); border-color: var(--grenat); }
     .pp-logout svg { width: 13px; height: 13px; }
 
-    /* ─── FULLSCREEN ERROR ── */
+    /* ─── SALLE FERMÉE (ERREUR) ── */
     .pp-error {
         min-height: 100vh;
-        display: flex; flex-direction: column;
-        justify-content: center; align-items: center;
-        text-align: center; padding: 2rem;
-        position: relative;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        text-align: center; padding: 2rem; position: relative;
+        background: radial-gradient(125% 90% at 50% -8%, #2c4a5e 0%, #213A4C 45%, #182c39 100%);
+        color: #EAE2D2;
     }
     .pp-error::before {
         content: '';
         position: absolute; inset: 0;
-        background: radial-gradient(ellipse 50% 50% at 50% 55%, rgba(200,121,65,0.06) 0%, transparent 70%);
+        background: radial-gradient(ellipse 50% 50% at 50% 50%, var(--halo) 0%, transparent 70%);
         pointer-events: none;
     }
+    /* Cordon de velours barrant l'entrée */
+    .pp-error::after {
+        content: '';
+        position: absolute; top: 30%; left: 12%; right: 12%; height: 5px;
+        background: var(--velours); border-radius: 99px;
+        box-shadow: 0 4px 14px rgba(0,0,0,.4), 0 0 0 6px rgba(122,34,51,.18);
+    }
     .pp-error-label {
-        font-size: 0.68rem; letter-spacing: 0.28em;
-        text-transform: uppercase; color: var(--copper);
-        margin-bottom: 2rem;
+        font-size: .72rem; letter-spacing: 0.26em; text-transform: uppercase;
+        color: var(--or-clair); margin-bottom: 2rem; position: relative; z-index: 1;
     }
     .pp-error-title {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(5rem, 18vw, 18rem);
-        line-height: 0.82; color: var(--ivory);
-        margin-bottom: 2.5rem;
+        font-family: var(--font-display); font-weight: 600;
+        font-size: clamp(4.5rem, 17vw, 17rem); line-height: 0.88; color: #FBF6EC;
+        margin-bottom: 2.5rem; position: relative; z-index: 1;
     }
     .pp-error-desc {
-        font-size: 1rem; color: var(--muted);
-        max-width: 380px; line-height: 1.7;
-        margin-bottom: 2.5rem;
+        font-size: 1.05rem; color: rgba(234,226,210,.7); max-width: 400px; line-height: 1.75;
+        margin-bottom: 2.5rem; position: relative; z-index: 1;
     }
-    .pp-error-desc em { font-style: normal; color: var(--copper); }
+    .pp-error-desc em { font-style: italic; color: var(--or-clair); }
     .pp-back-btn {
-        display: inline-flex; align-items: center; gap: 0.6rem;
-        background: var(--ivory); color: var(--ink);
-        padding: 0.85rem 2rem; border-radius: 999px;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.88rem; font-weight: 600;
-        text-decoration: none; transition: all 0.25s;
+        display: inline-flex; align-items: center; gap: .6rem;
+        background: var(--velin); color: var(--sepia);
+        padding: .9rem 2rem; border: 1px solid var(--or); border-radius: var(--r-medaillon);
+        font-family: var(--font-body); font-size: .95rem; font-weight: 600;
+        text-decoration: none; transition: all .25s; position: relative; z-index: 1;
+        box-shadow: 0 10px 30px rgba(0,0,0,.3);
     }
-    .pp-back-btn:hover { background: var(--copper); color: var(--ivory); transform: scale(1.04); }
+    .pp-back-btn:hover { background: var(--grenat); color: var(--velin); border-color: var(--grenat); transform: scale(1.03); }
 
-    /* ─── PROFILE HERO ── */
+    /* ─── SALLE D'HONNEUR (HERO) ── */
     .pp-hero {
-        padding: 10rem 2.5rem 4rem;
-        max-width: 1400px; margin: 0 auto;
-        display: grid; grid-template-columns: 140px 1fr;
-        gap: 3.5rem; align-items: start;
-        border-bottom: 1px solid var(--line);
+        padding: 10rem 2.5rem 4rem; max-width: 1400px; margin: 0 auto;
+        display: grid; grid-template-columns: 150px 1fr; gap: 3.5rem; align-items: start;
+        border-bottom: 1px solid var(--filet-or);
     }
     .pp-avatar {
-        width: 120px; height: 120px;
-        border-radius: 50%; object-fit: cover;
-        border: 2px solid rgba(200,121,65,0.3);
-        display: block; padding-top: 0.5rem;
-        transition: border-color 0.3s;
+        width: 130px; height: 130px; border-radius: 50%; object-fit: cover;
+        border: 3px solid var(--velin);
+        box-shadow: 0 0 0 2px var(--or), 0 14px 34px var(--ombre-cadre);
+        display: block; margin-top: .5rem; transition: box-shadow .3s, filter .3s;
     }
-    .pp-avatar:hover { border-color: var(--copper); }
-
+    .pp-avatar:hover { box-shadow: 0 0 0 2px var(--or-clair), 0 16px 40px var(--ombre-cadre); filter: brightness(1.04); }
     .pp-avatar-placeholder {
-        width: 120px; height: 120px;
-        border-radius: 50%;
-        background: rgba(200,121,65,0.08);
-        border: 2px solid rgba(200,121,65,0.2);
-        display: flex; align-items: center; justify-content: center;
-        margin-top: 0.5rem;
+        width: 130px; height: 130px; border-radius: 50%;
+        background: var(--stuc); border: 3px solid var(--velin);
+        box-shadow: 0 0 0 2px var(--or), 0 14px 34px var(--ombre-cadre);
+        display: flex; align-items: center; justify-content: center; margin-top: .5rem;
     }
-    .pp-avatar-placeholder svg { width: 40px; height: 40px; color: rgba(200,121,65,0.3); }
+    .pp-avatar-placeholder svg { width: 42px; height: 42px; color: var(--or-ombre); }
 
     .pp-hero-right { display: flex; flex-direction: column; gap: 1.5rem; }
-
     .pp-name {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(3rem, 7vw, 6.5rem);
-        line-height: 0.85; color: var(--ivory);
-        letter-spacing: -0.01em;
+        font-family: var(--font-display); font-weight: 600;
+        font-size: clamp(3rem, 7vw, 6rem); line-height: 0.9; color: var(--sepia); letter-spacing: -0.01em;
     }
-
-    .pp-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 0.25rem; }
-
+    .pp-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: .5rem; }
     .pp-pseudo {
-        font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em;
-        color: var(--copper);
-        background: rgba(200,121,65,0.1);
-        border: 1px solid rgba(200,121,65,0.3);
-        padding: 0.3rem 0.75rem; border-radius: 999px;
+        font-size: .85rem; font-weight: 600; letter-spacing: 0.08em; color: var(--or-ombre);
+        background: var(--velin); border: 1px solid var(--or); padding: .3rem .8rem; border-radius: var(--r-medaillon);
     }
-
     .pp-share-btn {
-        display: inline-flex; align-items: center; gap: 0.4rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em;
-        color: var(--muted);
-        padding: 0.3rem 0.85rem;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: none; transition: all 0.25s; cursor: none;
+        display: inline-flex; align-items: center; gap: .4rem;
+        font-family: var(--font-body); font-size: .82rem; font-weight: 600; letter-spacing: 0.03em;
+        color: var(--or-ombre); padding: .3rem .85rem;
+        border: 1px solid var(--filet-or); border-radius: var(--r-medaillon);
+        background: var(--velin); transition: all .25s; cursor: none;
     }
-    .pp-share-btn:hover { color: var(--ivory); border-color: rgba(240,235,227,0.3); }
+    .pp-share-btn:hover { border-color: var(--or); box-shadow: 0 0 0 3px var(--halo); }
     .pp-share-btn svg { width: 12px; height: 12px; }
 
-    .pp-bio {
-        max-width: 560px;
-    }
-    .pp-bio-label {
-        font-size: 0.65rem; letter-spacing: 0.25em;
-        text-transform: uppercase; color: rgba(240,235,227,0.28);
-        margin-bottom: 0.5rem; display: block;
-    }
-    .pp-bio p {
-        font-size: 1.05rem; line-height: 1.75;
-        color: rgba(240,235,227,0.65);
-    }
-    .pp-bio-empty { font-style: italic; opacity: 0.35; }
+    .pp-bio { max-width: 560px; }
+    .pp-bio-label { font-size: .72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--or-ombre); margin-bottom: .5rem; display: block; }
+    .pp-bio p { font-size: 1.1rem; line-height: 1.8; color: var(--sepia-doux); }
+    .pp-bio-empty { font-style: italic; opacity: .5; }
 
-    /* ─── TICKER ── */
+    /* ─── FRISE-GUIRLANDE (TICKER) ── */
     .pp-ticker {
-        border-top: 1px solid var(--line);
-        border-bottom: 1px solid var(--line);
-        background: var(--ink-2);
-        padding: 0.9rem 0; overflow: hidden;
+        border-top: 1px solid var(--filet-or); border-bottom: 1px solid var(--filet-or);
+        background: var(--stuc); padding: .9rem 0; overflow: hidden;
     }
-    .pp-ticker-track {
-        display: flex; gap: 0;
-        animation: marquee 30s linear infinite;
-        white-space: nowrap; width: max-content;
-    }
+    .pp-ticker-track { display: flex; gap: 0; animation: marquee 32s linear infinite; white-space: nowrap; width: max-content; }
     .pp-ticker-item {
-        display: inline-flex; align-items: center; gap: 2rem;
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 0.95rem; letter-spacing: 0.18em;
-        color: rgba(240,235,227,0.25); padding: 0 2rem;
+        display: inline-flex; align-items: center; gap: 1.5rem;
+        font-family: var(--font-display); font-weight: 500; font-size: 1rem; letter-spacing: 0.12em;
+        color: var(--or-ombre); padding: 0 1.5rem;
     }
-    .pp-ticker-sep { color: var(--copper); }
+    .pp-ticker-sep { color: var(--or); }
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-    @keyframes marquee {
-        from { transform: translateX(0); }
-        to   { transform: translateX(-50%); }
-    }
-
-    /* ─── COLLECTION ── */
-    .pp-collection {
-        max-width: 1400px; margin: 0 auto;
-        padding: 0 2.5rem 6rem;
-    }
-
-    .pp-category {
-        padding: 3.5rem 0;
-        border-bottom: 1px solid var(--line);
-    }
+    /* ─── SALLES / COLLECTION ── */
+    .pp-collection { max-width: 1400px; margin: 0 auto; padding: 0 2.5rem 6rem; }
+    .pp-category { padding: 3.5rem 0; border-bottom: 1px solid var(--filet); }
     .pp-category:last-child { border-bottom: none; }
-
     .pp-category-header { margin-bottom: 2rem; }
-
     .pp-category-title {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(2.5rem, 5vw, 4.5rem);
-        line-height: 0.85; color: var(--ivory);
-        letter-spacing: -0.01em;
+        font-family: var(--font-display); font-weight: 600;
+        font-size: clamp(2.25rem, 5vw, 4rem); line-height: 0.9; color: var(--sepia); letter-spacing: -0.01em;
+        position: relative; padding-top: 1.4rem;
     }
+    .pp-category-title::before { content: '\10086'; position: absolute; top: 0; left: 0; font-size: 1rem; color: var(--or); }
 
-    /* ─── ALBUM SCROLL ── */
+    /* ─── CIMAISE ── */
     .pp-scroll {
-        display: flex; gap: 1rem;
-        overflow-x: auto; overflow-y: hidden;
-        padding-bottom: 0.75rem;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(200,121,65,0.25) transparent;
+        display: flex; gap: 1.25rem; overflow-x: auto; overflow-y: hidden; padding-bottom: .75rem;
+        scrollbar-width: thin; scrollbar-color: var(--or) transparent;
     }
     .pp-scroll::-webkit-scrollbar { height: 3px; }
-    .pp-scroll::-webkit-scrollbar-thumb { background: rgba(200,121,65,0.3); border-radius: 99px; }
+    .pp-scroll::-webkit-scrollbar-thumb { background: var(--dorure); border-radius: 99px; }
 
-    /* ─── ALBUM CARD ── */
-    .pp-album {
-        flex: 0 0 200px;
-        display: flex; flex-direction: column; gap: 0.65rem;
-    }
-
+    /* ─── ŒUVRES ENCADRÉES ── */
+    .pp-album { flex: 0 0 200px; display: flex; flex-direction: column; gap: .65rem; }
     .pp-cover {
-        position: relative;
-        width: 200px; height: 200px;
-        border-radius: 4px; overflow: hidden;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.06);
+        position: relative; width: 200px; height: 200px; border-radius: var(--r-cartel); overflow: hidden;
+        background: var(--stuc); border: 6px solid var(--velin);
+        box-shadow: 0 0 0 2px var(--or), 0 16px 34px var(--ombre-cadre), inset 0 2px 6px rgba(0,0,0,.18);
+        transition: box-shadow .35s, filter .35s;
     }
-    .pp-cover img {
-        width: 100%; height: 100%; object-fit: cover; display: block;
-        transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
-    }
-    .pp-album:hover .pp-cover img { transform: scale(1.04); }
+    .pp-album:hover .pp-cover { box-shadow: 0 0 0 2px var(--or-clair), 0 20px 44px var(--ombre-cadre); filter: brightness(1.05) saturate(1.04); }
+    .pp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(0.4,0,0.2,1); }
 
     .pp-cover-overlay {
         position: absolute; inset: 0;
-        background: linear-gradient(to top, rgba(9,9,10,0.9) 0%, rgba(9,9,10,0.35) 50%, transparent 100%);
-        display: flex; flex-direction: column;
-        justify-content: flex-end; padding: 0.85rem;
-        opacity: 0; transition: opacity 0.3s;
+        background: linear-gradient(to top, rgba(43,33,24,.88) 0%, rgba(43,33,24,.32) 48%, transparent 100%);
+        display: flex; flex-direction: column; justify-content: flex-end; padding: .85rem;
+        opacity: 0; transition: opacity .3s;
     }
     .pp-album:hover .pp-cover-overlay { opacity: 1; }
-
     .pp-cover-overlay .pp-album-title {
-        font-size: 0.85rem; font-weight: 700;
-        color: var(--ivory); margin: 0 0 0.2rem;
-        line-height: 1.3;
-        display: -webkit-box; -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical; overflow: hidden;
+        font-family: var(--font-body); font-size: .92rem; font-weight: 600; color: var(--velin); margin: 0 0 .2rem; line-height: 1.3;
+        display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .pp-cover-overlay .pp-album-artist {
-        font-size: 0.75rem; color: rgba(240,235,227,0.6);
-        margin: 0; white-space: nowrap;
-        overflow: hidden; text-overflow: ellipsis;
-    }
+    .pp-cover-overlay .pp-album-artist { font-style: italic; font-size: .8rem; color: rgba(251,246,236,.7); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .pp-album-info { display: none; } /* shown on mobile via responsive */
-    .pp-album-info .pp-album-title {
-        font-size: 0.82rem; font-weight: 600;
-        color: var(--ivory); line-height: 1.3;
-    }
-    .pp-album-info .pp-album-artist {
-        font-size: 0.72rem; color: var(--muted);
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .pp-album-info { display: none; }
+    .pp-album-info .pp-album-title { font-family: var(--font-body); font-size: .9rem; font-weight: 600; color: var(--sepia); line-height: 1.3; }
+    .pp-album-info .pp-album-artist { font-style: italic; font-size: .8rem; color: var(--sepia-doux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .pp-cover-placeholder {
-        width: 100%; height: 100%;
-        display: flex; align-items: center; justify-content: center;
-    }
-    .pp-cover-placeholder svg { width: 2.5rem; height: 2.5rem; color: rgba(200,121,65,0.2); }
+    .pp-cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .pp-cover-placeholder svg { width: 2.5rem; height: 2.5rem; color: var(--or-ombre); opacity: .4; }
 
-    /* ─── NO ALBUMS ── */
-    .pp-no-albums {
-        padding: 3rem 0;
-        display: flex; flex-direction: column;
-        align-items: center; gap: 0.75rem;
-        color: rgba(240,235,227,0.2);
-    }
-    .pp-no-albums svg { width: 2rem; height: 2rem; color: rgba(200,121,65,0.2); }
-    .pp-no-albums p { font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    /* ─── CIMAISE VIDE ── */
+    .pp-no-albums { padding: 3rem 0; display: flex; flex-direction: column; align-items: center; gap: .75rem; color: var(--muted); }
+    .pp-no-albums svg { width: 2rem; height: 2rem; color: var(--filet-or); }
+    .pp-no-albums p { font-size: .9rem; letter-spacing: 0.08em; text-transform: uppercase; }
 
-    /* ─── EMPTY COLLECTION ── */
-    .pp-empty {
-        padding: 6rem 2.5rem;
-        text-align: center;
-        max-width: 1400px; margin: 0 auto;
-    }
-    .pp-empty svg { width: 2.5rem; height: 2.5rem; color: rgba(200,121,65,0.2); margin-bottom: 1rem; }
-    .pp-empty p { font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(240,235,227,0.2); }
+    .pp-empty { padding: 6rem 2.5rem; text-align: center; max-width: 1400px; margin: 0 auto; }
+    .pp-empty svg { width: 2.5rem; height: 2.5rem; color: var(--filet-or); margin-bottom: 1rem; }
+    .pp-empty p { font-size: .92rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 
-    /* ─── FOOTER ── */
+    /* ─── SOCLE (FOOTER) ── */
     .pp-footer {
-        border-top: 1px solid var(--line);
-        padding: 1.75rem 2.5rem;
-        display: flex; justify-content: space-between;
-        font-size: 0.72rem; letter-spacing: 0.06em;
-        color: rgba(240,235,227,0.2);
-        max-width: 1400px; margin: 0 auto;
+        border-top: 1px solid var(--filet-or); background: var(--marbre);
+        padding: 1.75rem 2.5rem; display: flex; justify-content: space-between;
+        font-size: .8rem; letter-spacing: 0.04em; color: var(--sepia-doux); max-width: 1400px; margin: 4rem auto 0;
     }
 
-    /* ─── TOAST ── */
+    /* ─── CARTEL VOLANT (TOAST) ── */
     .pp-toast {
-        position: fixed; bottom: 2rem; left: 50%;
-        transform: translateX(-50%) translateY(20px);
-        background: #111113;
-        border: 1px solid rgba(200,121,65,0.3);
-        border-radius: 999px;
-        padding: 0.65rem 1.5rem;
-        font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em;
-        color: var(--ivory); z-index: 5000;
-        opacity: 0; transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
-        pointer-events: none;
+        position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+        background: var(--velin); border: 1px solid var(--or); border-radius: var(--r-medaillon);
+        padding: .65rem 1.5rem; font-size: .88rem; font-weight: 600; letter-spacing: 0.02em;
+        color: var(--sepia); z-index: 5000; opacity: 0;
+        transition: all .35s cubic-bezier(0.16,1,0.3,1); pointer-events: none; box-shadow: 0 14px 36px var(--ombre-cadre);
     }
     .pp-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ─── SCROLL REVEAL ── */
-    .js-reveal {
-        opacity: 0; transform: translateY(24px);
-        transition: opacity 0.85s cubic-bezier(0.16,1,0.3,1),
-                    transform 0.85s cubic-bezier(0.16,1,0.3,1);
-    }
+    /* ─── LEVER DE VOILE ── */
+    .js-reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s cubic-bezier(0.16,1,0.3,1), transform .9s cubic-bezier(0.16,1,0.3,1); }
     .js-reveal.is-revealed { opacity: 1; transform: translateY(0); }
-    .js-reveal-delay-1 { transition-delay: 0.1s; }
-    .js-reveal-delay-2 { transition-delay: 0.2s; }
+    .js-reveal-delay-1 { transition-delay: .1s; }
+    .js-reveal-delay-2 { transition-delay: .2s; }
 
     /* ─── RESPONSIVE ── */
     @media (max-width: 768px) {
         body { cursor: auto; }
         .cursor, .cursor-ring { display: none; }
-
         .pp-header { padding: 1.25rem; }
-        .pp-header.scrolled { padding: 0.9rem 1.25rem; }
-
-        .pp-hero {
-            grid-template-columns: 1fr;
-            padding: 8rem 1.25rem 3rem;
-            gap: 1.5rem;
-        }
-        .pp-avatar, .pp-avatar-placeholder { width: 80px; height: 80px; }
-
+        .pp-header.scrolled { padding: .9rem 1.25rem; }
+        .pp-hero { grid-template-columns: 1fr; padding: 8rem 1.25rem 3rem; gap: 1.5rem; }
+        .pp-avatar, .pp-avatar-placeholder { width: 88px; height: 88px; }
         .pp-collection, .pp-empty, .pp-footer { padding-left: 1.25rem; padding-right: 1.25rem; }
-
         .pp-category { padding: 2.5rem 0; }
         .pp-category-title { font-size: clamp(2rem, 8vw, 3rem); }
-
         .pp-album { flex: 0 0 150px; }
         .pp-cover { width: 150px; height: 150px; }
         .pp-cover-overlay { opacity: 1; }
-        .pp-album-info { display: flex; flex-direction: column; gap: 0.15rem; }
-
-        .pp-footer { flex-direction: column; gap: 0.4rem; text-align: center; }
+        .pp-album-info { display: flex; flex-direction: column; gap: .15rem; }
+        .pp-footer { flex-direction: column; gap: .4rem; text-align: center; }
+        .pp-error::after { left: 6%; right: 6%; }
     }
-
     @media (max-width: 480px) {
         .pp-name { font-size: 2.75rem; }
         .pp-album { flex: 0 0 130px; }
@@ -434,13 +335,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F1E9DA">
     <meta name="description" content="' . htmlspecialchars($description) . '">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/img/logo.ico">
     <title>' . htmlspecialchars($title) . '</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=EB+Garamond:ital,wght@0,400..600;1,400..600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     ' . $styles . '
 </head>
@@ -452,7 +354,10 @@
         echo '<div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
 <header class="pp-header" id="ppHeader">
-    <a href="/" class="pp-logo">UNIVERSON</a>';
+    <a href="/" class="pp-logo">
+        <svg class="lys" viewBox="0 0 24 30" fill="currentColor" aria-hidden="true"><path d="M12 0c1.6 2.3 1.6 4.7 0 7-1.6-2.3-1.6-4.7 0-7zM12 7c2.4 1.2 3.6 3.2 3.4 6.2 2.2-1.4 4.4-1 6.6 1.2-3 .4-4.6 2-4.8 4.8-1.6-1.8-3.4-2.4-5.2-1.8v8.2c2-.4 3.8-.2 5.4 1.4H8.6c1.6-1.6 3.4-1.8 5.4-1.4v-8.2c-1.8-.6-3.6 0-5.2 1.8-.2-2.8-1.8-4.4-4.8-4.8 2.2-2.2 4.4-2.6 6.6-1.2C8.4 10.2 9.6 8.2 12 7z"/></svg>
+        UNIVERSON
+    </a>';
         if ($logoutBtn) {
             echo '<button id="logoutBtn" class="pp-logout">
         <i data-lucide="log-out"></i>
@@ -493,7 +398,7 @@
         pp_cursor_and_header($site_title);
 ?>
 <main class="pp-error">
-    <span class="pp-error-label">— Erreur 404</span>
+    <span class="pp-error-label">— Erreur 404 · Salle introuvable</span>
     <h1 class="pp-error-title">PROFIL<br>INTROUVABLE</h1>
     <p class="pp-error-desc">
         Le profil <em>@<?= htmlspecialchars($username) ?></em> n'existe pas ou n'est plus disponible sur Universon.
@@ -517,7 +422,7 @@
         pp_cursor_and_header($site_title);
 ?>
 <main class="pp-error">
-    <span class="pp-error-label">— Accès restreint</span>
+    <span class="pp-error-label">— Accès restreint · Salle fermée</span>
     <h1 class="pp-error-title">PROFIL<br>PRIVÉ</h1>
     <p class="pp-error-desc">
         Ce profil est privé et n'est pas accessible au public.
@@ -581,7 +486,7 @@
     pp_cursor_and_header($site_title, $hasLogout);
 ?>
 
-<!-- Profile hero -->
+<!-- Salle d'honneur -->
 <section class="pp-hero">
     <div>
         <?php if (!empty($publicUser['picture'])): ?>
@@ -622,17 +527,17 @@
     </div>
 </section>
 
-<!-- Ticker -->
+<!-- Frise-guirlande -->
 <div class="pp-ticker" aria-hidden="true">
     <div class="pp-ticker-track">
-        <span class="pp-ticker-item">COLLECTION DE @<?= htmlspecialchars(strtoupper($publicUser['pseudo'])) ?> <span class="pp-ticker-sep">×</span></span>
-        <span class="pp-ticker-item">UNIVERSON <span class="pp-ticker-sep">×</span></span>
-        <span class="pp-ticker-item">MUSÉE MUSICAL <span class="pp-ticker-sep">×</span></span>
-        <span class="pp-ticker-item">EXPOSITION PERSONNELLE <span class="pp-ticker-sep">×</span></span>
-        <span class="pp-ticker-item">COLLECTION DE @<?= htmlspecialchars(strtoupper($publicUser['pseudo'])) ?> <span class="pp-ticker-sep">×</span></span>
-        <span class="pp-ticker-item">UNIVERSON <span class="pp-ticker-sep">×</span></span>
-        <span class="pp-ticker-item">MUSÉE MUSICAL <span class="pp-ticker-sep">×</span></span>
-        <span class="pp-ticker-item">EXPOSITION PERSONNELLE <span class="pp-ticker-sep">×</span></span>
+        <span class="pp-ticker-item">COLLECTION DE @<?= htmlspecialchars(strtoupper($publicUser['pseudo'])) ?> <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">UNIVERSON <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">MUSÉE MUSICAL <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">EXPOSITION PERSONNELLE <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">COLLECTION DE @<?= htmlspecialchars(strtoupper($publicUser['pseudo'])) ?> <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">UNIVERSON <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">MUSÉE MUSICAL <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">EXPOSITION PERSONNELLE <span class="pp-ticker-sep">&#10086;</span></span>
     </div>
 </div>
 
@@ -689,7 +594,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
             </svg>
-            <p>Aucun album dans cette catégorie</p>
+            <p>Salle en cours d'accrochage</p>
         </div>
         <?php endif; ?>
     </section>
