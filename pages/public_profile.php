@@ -40,6 +40,9 @@
         --spot:radial-gradient(ellipse 55% 50% at 50% 42%,var(--halo) 0%,transparent 70%);
         --font-display:'Fraunces',serif;
         --font-body:'EB Garamond',serif;
+        /* Salon vert (musée Cognacq-Jay) */
+        --salon-vert:#2f5d44; --salon-vert-clair:#4a7a5d; --salon-vert-fonce:#1d3d2c; --salon-vert-profond:#13261c;
+        --parquet:#7a5a36; --parquet-clair:#9c7a4a; --parquet-fonce:#4f3a22;
     }
 
     html { scroll-behavior: smooth; }
@@ -324,6 +327,107 @@
         .pp-album { flex: 0 0 130px; }
         .pp-cover { width: 130px; height: 130px; }
     }
+
+    /* ════════════════════════════════════════════════════════════════
+       TOGGLE DE VUE  ·  Classique / Salon
+    ════════════════════════════════════════════════════════════════ */
+    .pp-viewtoggle {
+        position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 260;
+        display: inline-flex; align-items: center; gap: 2px; padding: 3px;
+        background: rgba(251,246,236,.9); backdrop-filter: blur(10px);
+        border: 1px solid var(--filet-or); border-radius: var(--r-medaillon);
+        box-shadow: 0 6px 20px var(--ombre-cadre), inset 0 1px 2px rgba(43,33,24,.06);
+        transition: top .4s;
+    }
+    .pp-header.scrolled ~ .pp-viewtoggle, body.salon-active .pp-viewtoggle { top: .9rem; }
+    .pp-viewtoggle button {
+        display: inline-flex; align-items: center; gap: .4rem;
+        font-family: var(--font-body); font-size: .8rem; font-weight: 600; letter-spacing: 0.04em;
+        color: var(--sepia-doux); padding: .42rem .95rem; border: none; background: none;
+        border-radius: var(--r-medaillon); cursor: none; transition: all .28s cubic-bezier(.16,1,.3,1);
+    }
+    .pp-viewtoggle button svg { width: 14px; height: 14px; }
+    .pp-viewtoggle button:hover { color: var(--sepia); }
+    .pp-viewtoggle button.active {
+        background: var(--velours); color: var(--velin);
+        box-shadow: 0 4px 12px var(--ombre-cadre), inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       VUE SALON  ·  galerie 3D Three.js (musée vert immersif)
+    ════════════════════════════════════════════════════════════════ */
+    .pp-salon { display: none; }
+    body.salon-active { overflow: hidden; }
+    body.salon-active .pp-salon {
+        display: block; position: fixed; inset: 0; z-index: 100; background: #0c1c14;
+    }
+    body.salon-active .pp-ticker,
+    body.salon-active .pp-collection,
+    body.salon-active .pp-footer { display: none; }
+
+    #salonCanvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+    #salonCanvas.grabbing { cursor: grabbing; }
+    #salonCanvas.pointing { cursor: pointer; }
+
+    /* loader */
+    .salon-loader {
+        position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 1.2rem; text-align: center;
+        background: radial-gradient(125% 90% at 50% 30%, #1d3d2c 0%, #0c1c14 70%);
+        color: var(--craie); transition: opacity .8s ease; padding: 2rem;
+    }
+    .salon-loader.hidden { opacity: 0; pointer-events: none; }
+    .salon-loader .ring {
+        width: 46px; height: 46px; border: 2px solid var(--filet-or); border-top-color: var(--or-clair);
+        border-radius: 50%; animation: salon-spin 1s linear infinite;
+    }
+    @keyframes salon-spin { to { transform: rotate(360deg); } }
+    .salon-loader .label { font-size: .72rem; letter-spacing: .26em; text-transform: uppercase; color: var(--or-clair); }
+    .salon-loader .title { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.6rem,4vw,2.4rem); }
+    .salon-loader .title em { font-style: italic; color: var(--or-clair); }
+
+    /* HUD */
+    .salon-hud { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+    .salon-hud .room-cartel {
+        position: absolute; top: 5.2rem; left: 50%; transform: translateX(-50%);
+        background: rgba(12,28,20,.55); border: 1px solid var(--filet-or); backdrop-filter: blur(6px);
+        border-radius: var(--r-cartel); padding: .55rem 1.4rem; text-align: center; max-width: 80vw;
+        opacity: 0; transition: opacity .5s;
+    }
+    .salon-hud .room-cartel.show { opacity: 1; }
+    .salon-hud .room-cartel .t { font-family: var(--font-body); font-weight: 600; font-size: 1rem; color: var(--velin); }
+    .salon-hud .room-cartel .a { font-style: italic; font-size: .82rem; color: var(--or-clair); }
+    .salon-hud .room-cartel .lab { font-size: .62rem; letter-spacing: .24em; text-transform: uppercase; color: var(--or-clair); display: block; margin-bottom: .25rem; }
+
+    .salon-hint {
+        position: absolute; bottom: 1.6rem; left: 50%; transform: translateX(-50%);
+        display: inline-flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; justify-content: center;
+        background: rgba(12,28,20,.5); border: 1px solid var(--filet-or); backdrop-filter: blur(6px);
+        border-radius: var(--r-medaillon); padding: .55rem 1.4rem; max-width: 92vw;
+        font-style: italic; color: var(--craie); font-size: .85rem;
+    }
+    .salon-hint kbd {
+        font-style: normal; font-size: .68rem; letter-spacing: .04em;
+        background: rgba(251,246,236,.12); border: 1px solid var(--filet-or); border-radius: var(--r-medaillon);
+        padding: .12rem .55rem; color: var(--or-clair); margin-right: .4rem;
+    }
+    .salon-hint .sep { color: var(--or); }
+    .salon-empty-note {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2;
+        text-align: center; color: var(--craie); font-style: italic; opacity: .8; pointer-events: none;
+        font-size: 1rem; letter-spacing: .04em;
+    }
+    .salon-nowebgl {
+        position: absolute; inset: 0; z-index: 4; display: none; flex-direction: column; gap: 1rem;
+        align-items: center; justify-content: center; text-align: center; padding: 2rem;
+        background: radial-gradient(125% 90% at 50% 30%, #1d3d2c 0%, #0c1c14 70%); color: var(--craie);
+    }
+    .salon-nowebgl.show { display: flex; }
+
+    @media (max-width: 768px) {
+        .salon-hint { font-size: .78rem; gap: .9rem; padding: .5rem 1rem; }
+        .salon-hud .room-cartel { top: 4.4rem; }
+    }
 </style>
 <?php
     $commonStyles = ob_get_clean();
@@ -462,6 +566,12 @@
     }
 
     $publicUserAlbums = get_user_albums($publicUser['id']);
+
+    /* Albums indispensables (catégorie « favorite ») → paires pour la vue Salon */
+    $favoriteAlbums = $categoriesAlbums['favorite'] ?? [];
+    $salonRooms = array_chunk($favoriteAlbums, 2);
+    if (empty($salonRooms)) $salonRooms = [[]]; // une salle vide « en cours d'accrochage »
+
     $isOwnProfile = $viewer && isset($viewer['pseudo']) && $viewer['pseudo'] === $publicUser['pseudo'];
     $hasLogout = (bool) $viewer;
 
@@ -511,6 +621,14 @@
                     </svg>
                     <?= $isOwnProfile ? 'Partager mon profil' : 'Partager ce profil' ?>
                 </button>
+                <div class="pp-viewtoggle" role="group" aria-label="Mode d'affichage">
+                    <button type="button" id="viewClassicBtn" class="active" aria-pressed="true">
+                        <i data-lucide="layout-grid"></i> Classique
+                    </button>
+                    <button type="button" id="viewSalonBtn" aria-pressed="false">
+                        <i data-lucide="frame"></i> Salon
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -540,6 +658,70 @@
         <span class="pp-ticker-item">EXPOSITION PERSONNELLE <span class="pp-ticker-sep">&#10086;</span></span>
     </div>
 </div>
+
+<!-- ════════ VUE SALON · galerie 3D Three.js ════════ -->
+<?php
+    /* Une salle (couleur) par catégorie, dans cet ordre ; on n'inclut que les
+       catégories qui contiennent au moins un album. */
+    $salonOrder = ['favorite', 'most_played', 'guilty_pleasure'];
+    $catDesc = [];
+    foreach ($categories as $c) { $catDesc[$c['name']] = $c['description']; }
+    $mapAlbum = function ($a) {
+        return [
+            'name'   => $a['name'],
+            'artist' => $a['artist_name'] ?? '',
+            'img'    => !empty($a['image_url_100']) ? $a['image_url_100'] : ($a['image_url_60'] ?? ''),
+        ];
+    };
+    $orderedKeys = $salonOrder;
+    foreach (array_keys($categoriesAlbums) as $k) { if (!in_array($k, $orderedKeys, true)) $orderedKeys[] = $k; }
+    $salonCats = [];
+    foreach ($orderedKeys as $key) {
+        $albums = $categoriesAlbums[$key] ?? [];
+        if (empty($albums)) continue;
+        $salonCats[] = [
+            'key'    => $key,
+            'label'  => $catDesc[$key] ?? $key,
+            'albums' => array_map($mapAlbum, $albums),
+        ];
+    }
+    $salonData = ['categories' => $salonCats];
+?>
+<div class="pp-salon" id="ppSalon">
+    <canvas id="salonCanvas"></canvas>
+
+    <div class="salon-hud">
+        <div class="room-cartel" id="salonCartel">
+            <span class="lab">Album indispensable</span>
+            <span class="t"></span>
+            <span class="a"></span>
+        </div>
+        <div class="salon-hint">
+            <span><kbd>Glisser</kbd>regarder</span>
+            <span class="sep">&#10086;</span>
+            <span><kbd>Molette</kbd>avancer</span>
+            <span class="sep">&#10086;</span>
+            <span><kbd>Clic</kbd>une œuvre</span>
+        </div>
+    </div>
+
+    <?php if (empty($salonCats)): ?>
+    <div class="salon-empty-note">Aucun album catégorisé à accrocher pour le moment.</div>
+    <?php endif; ?>
+
+    <div class="salon-nowebgl" id="salonNoWebgl">
+        <span class="pp-bio-label" style="color:var(--or-clair)">❧ 3D indisponible ❧</span>
+        <p>Votre navigateur ne supporte pas la 3D temps réel.<br>Repassez en vue classique pour parcourir la collection.</p>
+    </div>
+
+    <div class="salon-loader" id="salonLoader">
+        <span class="label">❧ Vernissage ❧</span>
+        <div class="ring"></div>
+        <div class="title">Le <em>Salon</em> de @<?= htmlspecialchars($publicUser['pseudo']) ?></div>
+    </div>
+</div><!-- .pp-salon -->
+
+<script id="salonData" type="application/json"><?= json_encode($salonData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 
 <!-- Album collection -->
 <div class="pp-collection">
@@ -688,6 +870,424 @@
         logoutBtn.addEventListener('click', function () {
             window.location.href = '/api/logout.php?redirect=/index.php';
         });
+    })();
+
+    /* ── Toggle de vue + chargement paresseux du moteur 3D ── */
+    (function () {
+        var classicBtn = document.getElementById('viewClassicBtn');
+        var salonBtn   = document.getElementById('viewSalonBtn');
+        if (!classicBtn || !salonBtn) return;
+        var KEY = 'universon-view';
+        var THREE_SRC = 'https://unpkg.com/three@0.150.1/build/three.min.js';
+        var engine = null, loadingThree = false;
+
+        function setUI(isSalon) {
+            document.body.classList.toggle('salon-active', isSalon);
+            salonBtn.classList.toggle('active', isSalon);
+            classicBtn.classList.toggle('active', !isSalon);
+            salonBtn.setAttribute('aria-pressed', isSalon ? 'true' : 'false');
+            classicBtn.setAttribute('aria-pressed', isSalon ? 'false' : 'true');
+        }
+        function ensureEngine() {
+            if (engine || loadingThree) return;
+            if (typeof THREE !== 'undefined') { engine = buildSalon(); start(); return; }
+            loadingThree = true;
+            var s = document.createElement('script');
+            s.src = THREE_SRC; s.async = true;
+            s.onload = function () { loadingThree = false; engine = buildSalon(); start(); };
+            s.onerror = function () {
+                loadingThree = false;
+                var n = document.getElementById('salonNoWebgl'); if (n) n.classList.add('show');
+                var l = document.getElementById('salonLoader'); if (l) l.classList.add('hidden');
+            };
+            document.head.appendChild(s);
+        }
+        function start() { if (engine && document.body.classList.contains('salon-active')) engine.resume(); }
+
+        function enter() { setUI(true); ensureEngine(); if (engine) engine.resume(); }
+        function exit()  { setUI(false); if (engine) engine.pause(); }
+
+        classicBtn.addEventListener('click', function () { exit(); try { localStorage.setItem(KEY, 'classic'); } catch (e) {} });
+        salonBtn.addEventListener('click',   function () { enter(); try { localStorage.setItem(KEY, 'salon'); } catch (e) {} });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.body.classList.contains('salon-active')) { exit(); try { localStorage.setItem(KEY, 'classic'); } catch (e2) {} } });
+
+        var saved; try { saved = localStorage.getItem(KEY); } catch (e) {}
+        if (saved === 'salon') enter();
+
+        /* ════════════════════ MOTEUR SALON 3D (Three.js) ════════════════════ */
+        function buildSalon() {
+            var canvas = document.getElementById('salonCanvas');
+            var loaderEl = document.getElementById('salonLoader');
+            var cartelEl = document.getElementById('salonCartel');
+            var cartelT = cartelEl ? cartelEl.querySelector('.t') : null;
+            var cartelA = cartelEl ? cartelEl.querySelector('.a') : null;
+
+            function webglOK() { try { var c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); } catch (e) { return false; } }
+            if (!webglOK()) { document.getElementById('salonNoWebgl').classList.add('show'); if (loaderEl) loaderEl.classList.add('hidden'); return null; }
+
+            var data = [];
+            try { data = JSON.parse(document.getElementById('salonData').textContent || '[]'); } catch (e) {}
+            var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            var renderer;
+            try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true }); }
+            catch (e) { document.getElementById('salonNoWebgl').classList.add('show'); if (loaderEl) loaderEl.classList.add('hidden'); return null; }
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+            var scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x141009);
+            scene.fog = new THREE.Fog(0x141009, 14, 62);
+            var camera = new THREE.PerspectiveCamera(60, 1, 0.1, 220);
+            camera.rotation.order = 'YXZ';
+
+            /* palette */
+            var GOLD = 0xb5912f, GOLD_L = 0xe6c86e, CREAM = 0xf1e9da, STUC = 0xe5dac4;
+
+            /* ── une couleur de salle par catégorie ── */
+            var PALETTES = {
+                favorite:        { top: '#3f7257', mid: '#336249', bot: '#234734', line: 'rgba(18,38,26,.38)',  wall: 0x336249 },
+                most_played:     { top: '#9c4651', mid: '#7a2f3a', bot: '#551f28', line: 'rgba(40,10,16,.42)',  wall: 0x7a2f3a },
+                guilty_pleasure: { top: '#3f6280', mid: '#2c4a63', bot: '#1b3043', line: 'rgba(8,20,36,.42)',   wall: 0x2c4a63 },
+                _a:              { top: '#7a6a92', mid: '#574a6e', bot: '#392f4a', line: 'rgba(20,12,34,.42)',  wall: 0x574a6e },
+                _b:              { top: '#9a7a3e', mid: '#7a5e2c', bot: '#54401c', line: 'rgba(36,24,8,.42)',   wall: 0x7a5e2c },
+                _default:        { top: '#3f7257', mid: '#336249', bot: '#234734', line: 'rgba(18,38,26,.38)',  wall: 0x336249 }
+            };
+            var EXTRA = ['_a', '_b'], extraI = 0, palKeyMap = {};
+            function palOf(key) {
+                if (PALETTES[key]) return PALETTES[key];
+                if (!palKeyMap[key]) { palKeyMap[key] = EXTRA[extraI % EXTRA.length]; extraI++; }
+                return PALETTES[palKeyMap[key]];
+            }
+
+            /* ── textures procédurales ── */
+            function parquetTex() {
+                var c = document.createElement('canvas'); c.width = c.height = 256; var g = c.getContext('2d');
+                g.fillStyle = '#5c4329'; g.fillRect(0, 0, 256, 256);
+                var cols = ['#7a5a36', '#8a6a40', '#6d5030', '#83613a', '#74552f'];
+                var bw = 64, bh = 32;
+                for (var row = 0, y = 0; y < 256; y += bh, row++) {
+                    var off = (row % 2) * (bw / 2);
+                    for (var x = -bw; x < 256; x += bw) {
+                        var px = x + off;
+                        g.fillStyle = cols[(Math.random() * cols.length) | 0];
+                        g.fillRect(px + 1, y + 1, bw - 2, bh - 2);
+                        g.strokeStyle = 'rgba(40,28,15,.5)'; g.lineWidth = 1;
+                        for (var k = 0; k < 3; k++) { g.beginPath(); var gy = y + 6 + k * 9; g.moveTo(px + 2, gy); g.lineTo(px + bw - 2, gy + (Math.random() * 2 - 1)); g.stroke(); }
+                    }
+                }
+                var t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+            }
+            function wallTex(pal) {
+                var c = document.createElement('canvas'); c.width = c.height = 256; var g = c.getContext('2d');
+                var grd = g.createLinearGradient(0, 0, 0, 256);
+                grd.addColorStop(0, pal.top); grd.addColorStop(0.5, pal.mid); grd.addColorStop(1, pal.bot);
+                g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
+                g.strokeStyle = pal.line; g.lineWidth = 2;
+                for (var i = 1; i < 4; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, 256); g.stroke(); }
+                for (var n = 0; n < 1600; n++) { g.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.025) + ')'; g.fillRect(Math.random() * 256, Math.random() * 256, 1, 1); }
+                var t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+            }
+
+            /* ── matériaux ── */
+            var floorMat = new THREE.MeshStandardMaterial({ map: parquetTex(), roughness: 0.65, metalness: 0.04 });
+            var ceilMat  = new THREE.MeshStandardMaterial({ color: CREAM, roughness: 1, side: THREE.DoubleSide });
+            var goldMat  = new THREE.MeshStandardMaterial({ color: GOLD, metalness: 0.9, roughness: 0.32, emissive: 0x3c2e0d, emissiveIntensity: 0.5 });
+            var darkWood = new THREE.MeshStandardMaterial({ color: 0x281d12, roughness: 1 });
+
+            /* murs : texture de gradient par catégorie (côtés) + couleur plate (transversaux) */
+            var wallTexCache = {}, flatMatCache = {};
+            function wallTexOf(key) { if (!wallTexCache[key]) wallTexCache[key] = wallTex(palOf(key)); return wallTexCache[key]; }
+            function sideWallMat(key, rx, ry) {
+                var t = wallTexOf(key).clone(); t.needsUpdate = true; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.colorSpace = THREE.SRGBColorSpace;
+                return new THREE.MeshStandardMaterial({ map: t, roughness: 0.92, metalness: 0, side: THREE.DoubleSide });
+            }
+            function flatWallMat(key) { if (!flatMatCache[key]) flatMatCache[key] = new THREE.MeshStandardMaterial({ color: palOf(key).wall, roughness: 0.95, metalness: 0, side: THREE.DoubleSide }); return flatMatCache[key]; }
+
+            /* ── salles : une travée (paire) par catégorie, à la suite ── */
+            var cats = (data && data.categories) ? data.categories : [];
+            var bayList = [];
+            cats.forEach(function (cat) {
+                var al = cat.albums || [];
+                for (var p = 0; p < al.length; p += 2) {
+                    bayList.push({ key: cat.key, label: (p === 0 ? cat.label : null), a0: al[p] || null, a1: al[p + 1] || null });
+                }
+            });
+            if (bayList.length === 0) bayList.push({ key: 'favorite', label: null, a0: null, a1: null });
+            var nBays = bayList.length;
+
+            /* ── dimensions ── */
+            var W = 10, H = 7, DOOR_W = 3.2, DOOR_H = 5, ROOM_D = 9;
+            function zWall(i) { return -2 - i * ROOM_D; }
+            var zEnd = zWall(nBays);
+            var zFront = 6;
+            var spanZ = zFront - (zEnd - 1);
+            var midZ = (zFront + (zEnd - 1)) / 2;
+
+            /* sol + plafond (continus) */
+            floorMat.map.repeat.set(6, Math.max(8, Math.round(spanZ / 2)));
+            var floor = new THREE.Mesh(new THREE.PlaneGeometry(W, spanZ), floorMat);
+            floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, midZ); scene.add(floor);
+            var ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, spanZ), ceilMat);
+            ceil.rotation.x = Math.PI / 2; ceil.position.set(0, H, midZ); scene.add(ceil);
+
+            /* murs latéraux d'une salle (de zA à zB) à la couleur de sa catégorie */
+            function sideWalls(zA, zB, key) {
+                var len = Math.abs(zA - zB), cz = (zA + zB) / 2;
+                [-1, 1].forEach(function (s) {
+                    var wall = new THREE.Mesh(new THREE.PlaneGeometry(len, H), sideWallMat(key, len / 4, H / 4));
+                    wall.rotation.y = s * Math.PI / 2; wall.position.set(s * W / 2, H / 2, cz); scene.add(wall);
+                    var corn = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.28, len), goldMat);
+                    corn.position.set(s * (W / 2 - 0.09), H - 0.32, cz); scene.add(corn);
+                    var base = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.5, len), darkWood);
+                    base.position.set(s * (W / 2 - 0.08), 0.25, cz); scene.add(base);
+                });
+            }
+
+            /* ── lustre ── */
+            function chandelier(z) {
+                var grp = new THREE.Group();
+                var chain = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 6), goldMat);
+                chain.position.y = H - 0.5; grp.add(chain);
+                var ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.06, 8, 24), goldMat);
+                ring.rotation.x = Math.PI / 2; ring.position.y = H - 1; grp.add(ring);
+                var core = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), goldMat);
+                core.position.y = H - 1; grp.add(core);
+                var bulbMat = new THREE.MeshStandardMaterial({ color: GOLD_L, emissive: 0xffd98a, emissiveIntensity: 1.6, roughness: 0.4 });
+                for (var b = 0; b < 8; b++) {
+                    var a = (b / 8) * Math.PI * 2;
+                    var bulb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), bulbMat);
+                    bulb.position.set(Math.cos(a) * 0.5, H - 0.9, Math.sin(a) * 0.5); grp.add(bulb);
+                }
+                var light = new THREE.PointLight(0xffe2a8, 1.5, ROOM_D * 2.2, 1.6);
+                light.position.set(0, H - 1, 0); grp.add(light);
+                grp.position.z = z; scene.add(grp);
+                return { grp: grp, light: light, base: 1.5, phase: Math.random() * 6.28 };
+            }
+            var chandeliers = [];
+            for (var ci = 0; ci <= nBays; ci++) {
+                var cz = (ci === 0) ? (zFront + zWall(0)) / 2 : zWall(ci - 1) - ROOM_D / 2;
+                chandeliers.push(chandelier(cz));
+            }
+
+            /* ── murs transversaux à porte + œuvres ── */
+            var paintingMeshes = [];
+            var loadList = [];
+            var texLoader = new THREE.TextureLoader(); texLoader.setCrossOrigin('anonymous');
+
+            function doorWall(z, solid, key) {
+                var shape = new THREE.Shape();
+                shape.moveTo(-W / 2, 0); shape.lineTo(W / 2, 0); shape.lineTo(W / 2, H); shape.lineTo(-W / 2, H); shape.lineTo(-W / 2, 0);
+                if (!solid) {
+                    var hole = new THREE.Path();
+                    hole.moveTo(-DOOR_W / 2, 0); hole.lineTo(DOOR_W / 2, 0); hole.lineTo(DOOR_W / 2, DOOR_H); hole.lineTo(-DOOR_W / 2, DOOR_H); hole.lineTo(-DOOR_W / 2, 0);
+                    shape.holes.push(hole);
+                }
+                var m = new THREE.Mesh(new THREE.ShapeGeometry(shape), flatWallMat(key));
+                m.position.z = z; scene.add(m);
+                if (!solid) {
+                    [-1, 1].forEach(function (s) {
+                        var jamb = new THREE.Mesh(new THREE.BoxGeometry(0.16, DOOR_H + 0.2, 0.22), goldMat);
+                        jamb.position.set(s * (DOOR_W / 2 + 0.06), (DOOR_H + 0.2) / 2, z + 0.02); scene.add(jamb);
+                    });
+                    var lint = new THREE.Mesh(new THREE.BoxGeometry(DOOR_W + 0.5, 0.18, 0.24), goldMat);
+                    lint.position.set(0, DOOR_H + 0.1, z + 0.02); scene.add(lint);
+                }
+            }
+
+            /* enseigne de salle (cartouche doré au-dessus de la porte) */
+            function signTex(label) {
+                var c = document.createElement('canvas'); c.width = 768; c.height = 128; var g = c.getContext('2d');
+                g.fillStyle = '#fbf6ec'; g.fillRect(0, 0, 768, 128);
+                g.strokeStyle = '#b5912f'; g.lineWidth = 7; g.strokeRect(10, 10, 748, 108);
+                g.fillStyle = '#856321'; g.textAlign = 'center'; g.textBaseline = 'middle';
+                var txt = (label || '').toUpperCase();
+                var fs = 46; if (txt.length > 22) fs = 38; if (txt.length > 30) fs = 30;
+                g.font = '600 ' + fs + 'px Georgia, "Times New Roman", serif';
+                // léger espacement de lettres
+                var letters = txt.split(''), total = 0, widths = [];
+                g.font = '600 ' + fs + 'px Georgia, serif';
+                for (var i = 0; i < letters.length; i++) { var w = g.measureText(letters[i]).width + 4; widths.push(w); total += w; }
+                var x = 384 - total / 2;
+                for (var j = 0; j < letters.length; j++) { g.fillText(letters[j], x + widths[j] / 2, 66); x += widths[j]; }
+                var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+            }
+            function categorySign(z, label, key) {
+                var stex = signTex(label);
+                var sign = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 0.6), new THREE.MeshStandardMaterial({ map: stex, emissive: 0xffffff, emissiveMap: stex, emissiveIntensity: 0.3, roughness: 0.85 }));
+                sign.position.set(0, DOOR_H + 0.7, z + 0.05); scene.add(sign);
+            }
+
+            function labelTex(name, artist) {
+                var c = document.createElement('canvas'); c.width = 512; c.height = 130; var g = c.getContext('2d');
+                g.fillStyle = '#fbf6ec'; g.fillRect(0, 0, 512, 130);
+                g.strokeStyle = '#b5912f'; g.lineWidth = 6; g.strokeRect(8, 8, 496, 114);
+                g.fillStyle = '#2b2118'; g.textAlign = 'center'; g.textBaseline = 'middle';
+                g.font = '600 40px Georgia, "Times New Roman", serif';
+                var nm = name.length > 26 ? name.slice(0, 25) + '…' : name;
+                g.fillText(nm, 256, artist ? 52 : 65);
+                if (artist) { g.fillStyle = '#5a4b38'; g.font = 'italic 31px Georgia, serif'; var ar = artist.length > 32 ? artist.slice(0, 31) + '…' : artist; g.fillText(ar, 256, 94); }
+                var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+            }
+            function painting(album, x, z) {
+                var PW = 2.5, FR = 0.26;
+                var grp = new THREE.Group();
+                var frame = new THREE.Mesh(new THREE.BoxGeometry(PW + FR, PW + FR, 0.16), goldMat);
+                frame.position.set(x, 3.3, z + 0.05); grp.add(frame);
+                var mat = new THREE.MeshStandardMaterial({ color: STUC, roughness: 0.55, metalness: 0.02 });
+                var plane = new THREE.Mesh(new THREE.PlaneGeometry(PW, PW), mat);
+                plane.position.set(x, 3.3, z + 0.14);
+                plane.userData = { name: album.name || '', artist: album.artist || '' };
+                grp.add(plane); paintingMeshes.push(plane);
+                var ltex = labelTex(album.name || '', album.artist || '');
+                var plaque = new THREE.Mesh(new THREE.PlaneGeometry(1.35, 0.34), new THREE.MeshStandardMaterial({ map: ltex, emissive: 0xffffff, emissiveMap: ltex, emissiveIntensity: 0.28, roughness: 0.85 }));
+                plaque.position.set(x, 1.62, z + 0.13); grp.add(plaque);
+                var spot = new THREE.SpotLight(0xfff0d0, 2.4, 8, Math.PI / 6, 0.5, 1.2);
+                spot.position.set(x, 6.2, z + 2.2);
+                spot.target.position.set(x, 3.3, z); grp.add(spot); grp.add(spot.target);
+                scene.add(grp);
+                if (album.img) {
+                    loadList.push(1);
+                    texLoader.load(album.img, function (tex) {
+                        tex.colorSpace = THREE.SRGBColorSpace;
+                        mat.map = tex; mat.color.set(0xffffff);
+                        mat.emissive = new THREE.Color(0xffffff); mat.emissiveMap = tex; mat.emissiveIntensity = 0.16;
+                        mat.needsUpdate = true; texDone();
+                    }, undefined, function () { texDone(); });
+                }
+            }
+
+            for (var i = 0; i < nBays; i++) {
+                var b = bayList[i];
+                var z = zWall(i);
+                var roomFront = (i === 0) ? zFront : zWall(i - 1);
+                sideWalls(roomFront, z, b.key);
+                doorWall(z, false, b.key);
+                if (b.label) categorySign(z, b.label, b.key);
+                if (b.a0) painting(b.a0, -3.05, z);
+                if (b.a1) painting(b.a1, 3.05, z);
+            }
+            /* salle finale décorative (couleur de la dernière catégorie) */
+            var lastKey = bayList[nBays - 1].key;
+            sideWalls(zWall(nBays - 1), zEnd, lastKey);
+            doorWall(zEnd, true, lastKey);
+            var endFrame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 3, 0.16), goldMat);
+            endFrame.position.set(0, 3.4, zEnd + 0.05); scene.add(endFrame);
+            var endArt = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 2.7), new THREE.MeshStandardMaterial({ color: 0xb39e72, roughness: 0.7, emissive: 0x4a3a18, emissiveIntensity: 0.25 }));
+            endArt.position.set(0, 3.4, zEnd + 0.14); scene.add(endArt);
+
+            /* ── lumières d'ambiance ── */
+            scene.add(new THREE.AmbientLight(0xfff1d8, 0.5));
+            scene.add(new THREE.HemisphereLight(0xfff4e0, 0x3a332a, 0.5));
+            var keyLight = new THREE.DirectionalLight(0xfff0d8, 0.45); keyLight.position.set(2, 8, 8); scene.add(keyLight);
+
+            /* ── chargement / loader ── */
+            var pending = loadList.length, hidden = false;
+            function hideLoader() { if (hidden) return; hidden = true; if (loaderEl) loaderEl.classList.add('hidden'); }
+            function texDone() { pending--; if (pending <= 0) hideLoader(); }
+            if (pending === 0) setTimeout(hideLoader, 400);
+            setTimeout(hideLoader, 6000);
+
+            /* ── caméra / navigation ── */
+            var camZ = 4, camZTarget = 4, camX = 0, camXTarget = 0;
+            var minZ = zEnd + 4, maxZ = 5;
+            var yaw = 0, pitch = 0, tYaw = 0, tPitch = 0;
+            var pNX = 0, pNY = 0;
+            var dragging = false, lastX = 0, lastY = 0, dragDist = 0;
+            var focusActive = false, focusX = 0;
+            var lastInteract = performance.now() / 1000, cruiseDir = -1, elapsed = 0;
+
+            var ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), hovered = null;
+            function setCursor(c) { canvas.classList.toggle('grabbing', c === 'grab'); canvas.classList.toggle('pointing', c === 'point'); }
+            function showCartel(p) { if (!cartelEl) return; cartelT.textContent = p.name; cartelA.textContent = p.artist; cartelEl.classList.add('show'); }
+            function hideCartel() { if (cartelEl && !focusActive) cartelEl.classList.remove('show'); }
+
+            function raycastAt(cx, cy) {
+                ndc.x = (cx / window.innerWidth) * 2 - 1; ndc.y = -(cy / window.innerHeight) * 2 + 1;
+                ray.setFromCamera(ndc, camera);
+                var hit = ray.intersectObjects(paintingMeshes, false)[0];
+                return hit ? hit.object : null;
+            }
+
+            canvas.addEventListener('pointerdown', function (e) {
+                dragging = true; dragDist = 0; lastX = e.clientX; lastY = e.clientY;
+                canvas.classList.add('grabbing'); lastInteract = performance.now() / 1000;
+                if (canvas.setPointerCapture) try { canvas.setPointerCapture(e.pointerId); } catch (er) {}
+            });
+            canvas.addEventListener('pointermove', function (e) {
+                pNX = (e.clientX / window.innerWidth - 0.5) * 2;
+                pNY = (e.clientY / window.innerHeight - 0.5) * 2;
+                if (dragging) {
+                    var dx = e.clientX - lastX, dy = e.clientY - lastY;
+                    dragDist += Math.abs(dx) + Math.abs(dy);
+                    tYaw -= dx * 0.0035; tPitch -= dy * 0.0032;
+                    tPitch = Math.max(-0.42, Math.min(0.42, tPitch));
+                    tYaw = Math.max(-0.9, Math.min(0.9, tYaw));
+                    lastX = e.clientX; lastY = e.clientY; lastInteract = performance.now() / 1000;
+                } else {
+                    var p = raycastAt(e.clientX, e.clientY);
+                    if (p !== hovered) { hovered = p; if (p) { showCartel(p.userData); setCursor('point'); } else { hideCartel(); setCursor(''); } }
+                }
+            });
+            function endDrag(e) {
+                if (!dragging) return; dragging = false; canvas.classList.remove('grabbing');
+                if (dragDist < 6) {
+                    var p = raycastAt(e.clientX, e.clientY);
+                    if (p) { focusOn(p); }
+                    else { focusActive = false; camXTarget = 0; tYaw = 0; tPitch = 0; hideCartel(); }
+                }
+            }
+            function focusOn(p) {
+                var px = p.position.x, pz = p.position.z;
+                camZTarget = pz + 4.6; camXTarget = px * 0.5; focusX = px * 0.5;
+                tYaw = -Math.atan2(px - focusX, camZTarget - pz); tPitch = 0.02;
+                focusActive = true; showCartel(p.userData); lastInteract = performance.now() / 1000;
+            }
+            canvas.addEventListener('pointerup', endDrag);
+            canvas.addEventListener('pointercancel', function () { dragging = false; canvas.classList.remove('grabbing'); });
+            canvas.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                focusActive = false; camXTarget = 0;
+                camZTarget -= e.deltaY * 0.01;
+                camZTarget = Math.max(minZ, Math.min(maxZ, camZTarget));
+                lastInteract = performance.now() / 1000;
+            }, { passive: false });
+
+            /* ── boucle ── */
+            var running = false, raf = null, clock = new THREE.Clock();
+            function update(dt) {
+                elapsed += dt;
+                var now = performance.now() / 1000;
+                if (!reduced && !focusActive && (now - lastInteract) > 4.5) {
+                    camZTarget += cruiseDir * 1.5 * dt;
+                    if (camZTarget <= minZ) { camZTarget = minZ; cruiseDir = 1; }
+                    if (camZTarget >= maxZ) { camZTarget = maxZ; cruiseDir = -1; }
+                }
+                camZ += (camZTarget - camZ) * 0.06;
+                camXTarget = focusActive ? focusX : 0;
+                camX += (camXTarget - camX) * 0.06;
+                var subYaw = focusActive ? 0 : pNX * 0.16, subPitch = focusActive ? 0 : -pNY * 0.10;
+                yaw += ((tYaw + subYaw) - yaw) * 0.08;
+                pitch += ((tPitch + subPitch) - pitch) * 0.08;
+                var bob = reduced ? 0 : Math.sin(elapsed * 1.1) * 0.04;
+                var swayX = (reduced || focusActive) ? 0 : Math.sin(elapsed * 0.5) * 0.12;
+                camera.position.set(camX + swayX, 2.75 + bob, camZ);
+                camera.rotation.set(pitch, yaw, reduced ? 0 : Math.sin(elapsed * 0.4) * 0.004);
+                for (var k = 0; k < chandeliers.length; k++) {
+                    var ch = chandeliers[k];
+                    if (!reduced) ch.grp.rotation.z = Math.sin(elapsed * 0.8 + ch.phase) * 0.03;
+                    ch.light.intensity = ch.base * (1 + (reduced ? 0 : Math.sin(elapsed * 7 + ch.phase) * 0.06));
+                }
+            }
+            function loop() { if (!running) return; raf = requestAnimationFrame(loop); update(clock.getDelta()); renderer.render(scene, camera); }
+            function resize() { var w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+            window.addEventListener('resize', function () { if (running) resize(); });
+
+            return {
+                resume: function () { resize(); if (!running) { running = true; clock.getDelta(); loop(); } },
+                pause: function () { running = false; if (raf) cancelAnimationFrame(raf); }
+            };
+        }
     })();
 
     /* ── Scroll reveal ── */
