@@ -586,12 +586,41 @@
     );
 
     // Extra meta for public profile
-    echo '<meta property="og:type" content="profile">
+    $profileImage = !empty($publicUser['picture'])
+        ? htmlspecialchars($publicUser['picture'])
+        : htmlspecialchars($site_url) . '/img/planet.png';
+    $profileKeywords = 'profil musical, ' . $profileName . ', @' . htmlspecialchars($publicUser['pseudo'])
+        . ', collection musicale, albums préférés, partager ses musiques, univers musical';
+
+    echo '<meta name="keywords" content="' . $profileKeywords . '">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="Universon">
+<meta property="og:locale" content="fr_FR">
 <meta property="og:url" content="' . $shareUrl . '">
 <meta property="og:title" content="' . $profileName . ' — Universon">
 <meta property="og:description" content="' . $bioMeta . '">
+<meta property="og:image" content="' . $profileImage . '">
 <meta name="twitter:card" content="summary">
-<link rel="canonical" href="' . $shareUrl . '">';
+<meta name="twitter:title" content="' . $profileName . ' — Universon">
+<meta name="twitter:description" content="' . $bioMeta . '">
+<meta name="twitter:image" content="' . $profileImage . '">
+<link rel="canonical" href="' . $shareUrl . '">
+<script type="application/ld+json">' . json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'ProfilePage',
+        'inLanguage' => 'fr',
+        'url' => $shareUrl,
+        'name' => $profileName . ' — Universon',
+        'description' => $bioMeta,
+        'mainEntity' => [
+            '@type' => 'Person',
+            'name' => $profileName,
+            'alternateName' => '@' . $publicUser['pseudo'],
+            'url' => $shareUrl,
+            'image' => $profileImage,
+        ],
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>';
 
     pp_cursor_and_header($site_title, $hasLogout);
 ?>
@@ -650,11 +679,11 @@
     <div class="pp-ticker-track">
         <span class="pp-ticker-item">COLLECTION DE @<?= htmlspecialchars(strtoupper($publicUser['pseudo'])) ?> <span class="pp-ticker-sep">&#10086;</span></span>
         <span class="pp-ticker-item">UNIVERSON <span class="pp-ticker-sep">&#10086;</span></span>
-        <span class="pp-ticker-item">MUSÉE MUSICAL <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">COLLECTION MUSICALE <span class="pp-ticker-sep">&#10086;</span></span>
         <span class="pp-ticker-item">EXPOSITION PERSONNELLE <span class="pp-ticker-sep">&#10086;</span></span>
         <span class="pp-ticker-item">COLLECTION DE @<?= htmlspecialchars(strtoupper($publicUser['pseudo'])) ?> <span class="pp-ticker-sep">&#10086;</span></span>
         <span class="pp-ticker-item">UNIVERSON <span class="pp-ticker-sep">&#10086;</span></span>
-        <span class="pp-ticker-item">MUSÉE MUSICAL <span class="pp-ticker-sep">&#10086;</span></span>
+        <span class="pp-ticker-item">COLLECTION MUSICALE <span class="pp-ticker-sep">&#10086;</span></span>
         <span class="pp-ticker-item">EXPOSITION PERSONNELLE <span class="pp-ticker-sep">&#10086;</span></span>
     </div>
 </div>
@@ -835,7 +864,7 @@
 
 <footer class="pp-footer">
     <span>© <?= date('Y') ?> Universon</span>
-    <span>Votre musée musical personnel</span>
+    <span>Votre univers musical à partager</span>
 </footer>
 
 <?php pp_cursor_js(); ?>

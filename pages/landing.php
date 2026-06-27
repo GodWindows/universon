@@ -21,18 +21,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Universon transforme votre collection musicale en une exposition artistique. Créez votre musée musical personnel et partagez vos albums préférés comme des œuvres d'art.">
+    <meta name="description" content="Créez votre profil musical, montrez vos musiques et partagez votre collection d'albums préférés en un seul lien. Universon met en valeur votre univers musical.">
+    <meta name="keywords" content="profil musical, montrer mes musiques, partager ses musiques, collection musicale, collection d'albums, albums préférés, exposer ses albums, univers musical">
+    <meta name="author" content="Universon">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#F1E9DA">
+    <link rel="canonical" href="<?= htmlspecialchars($site_url) ?>/">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="<?= $site_url ?>">
-    <meta property="og:title" content="Universon — Votre Musée Musical Personnel">
-    <meta property="og:description" content="Exposez vos albums comme des œuvres d'art.">
+    <meta property="og:site_name" content="Universon">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:url" content="<?= htmlspecialchars($site_url) ?>">
+    <meta property="og:title" content="Universon — Montrez et partagez votre univers musical">
+    <meta property="og:description" content="Créez votre profil musical et partagez votre collection d'albums préférés en un seul lien.">
+    <meta property="og:image" content="<?= htmlspecialchars($site_url) ?>/img/planet.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Universon — Votre Musée Musical Personnel">
+    <meta name="twitter:title" content="Universon — Montrez et partagez votre univers musical">
+    <meta name="twitter:description" content="Créez votre profil musical et partagez votre collection d'albums préférés en un seul lien.">
+    <meta name="twitter:image" content="<?= htmlspecialchars($site_url) ?>/img/planet.png">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/img/logo.ico">
-    <title>Universon — Votre Musée Musical Personnel</title>
+    <title>Universon — Montrez et partagez votre univers musical</title>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Universon",
+        "url": "<?= htmlspecialchars($site_url) ?>/",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "fr",
+        "description": "Créez votre profil musical, montrez vos musiques et partagez votre collection d'albums préférés en un seul lien.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "keywords": "profil musical, montrer mes musiques, partager ses musiques, collection musicale, albums préférés, univers musical"
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=EB+Garamond:ital,wght@0,400..600;1,400..600&display=swap" rel="stylesheet">
@@ -892,7 +914,7 @@
         </svg>
 
         <div class="frontispice-cartouche">
-            <span>Votre musée musical personnel</span>
+            <span>Votre univers musical à partager</span>
             <span class="sep">&#10086;</span>
             <span class="annee"><?= date('Y') ?></span>
         </div>
@@ -930,7 +952,7 @@
         <p class="frontispice-sous">Exposez vos albums comme des œuvres d'art</p>
 
         <div class="frontispice-bas">
-            <p class="frontispice-desc">Transformez votre collection musicale en une exposition artistique, accrochée et éclairée comme au musée.</p>
+            <p class="frontispice-desc">Composez votre collection musicale, montrez vos musiques et partagez vos albums préférés en un seul lien.</p>
             <a href="<?= htmlspecialchars($buttonUrl) ?>" class="cta-galerie">
                 <span>Entrer dans la galerie</span>
                 <span class="medaillon" aria-hidden="true">

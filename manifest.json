@@ -1,11 +1,11 @@
 {
-    "name": "Universon",
+    "name": "Universon — Votre profil musical à partager",
     "short_name": "Universon",
-    "description": "Créez et partagez votre univers musical personnel",
+    "description": "Créez votre profil musical, montrez vos musiques et partagez votre collection d'albums préférés en un seul lien.",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#0f0f23",
-    "theme_color": "#6366f1",
+    "background_color": "#F1E9DA",
+    "theme_color": "#F1E9DA",
     "orientation": "portrait-primary",
     "icons": [
         {
