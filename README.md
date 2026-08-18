@@ -1,61 +1,33 @@
 # Universon
 
-Une plateforme web moderne et responsive pour créer et partager votre univers musical personnel.
+Une plateforme web pour créer et partager votre univers musical personnel.
 
 **Déployé sur : [universon.fr](https://universon.fr)**
 
 ## Fonctionnalités
 
-- **Design Responsive** : Interface parfaitement adaptée à tous les appareils
 - **Authentification Google** : Connexion sécurisée via OAuth2
 - **Gestion d'Albums par Catégories** : Organisez vos albums préférés dans des catégories personnalisables
 - **Profils Publics/Privés** : Partagez votre collection musicale avec un pseudo unique (format `@username`)
 - **Recherche d'Albums** : Recherchez et ajoutez des albums à votre collection
-- **Interface Moderne** : Design glassmorphism avec animations fluides
-- **Thème Musical** : Éléments visuels animés inspirés de la musique
-- **Performance Optimisée** : Chargement rapide et animations fluides
-- **Icônes Professionnelles** : Utilisation de Lucide Icons pour une interface cohérente
 - **Partage de Profil** : Partagez facilement votre profil musical avec un lien direct
 
-## Design System
+## État de la présentation
 
-### Palette de Couleurs
-- **Primaire** : Indigo (#6366f1) - Pour les éléments principaux
-- **Accent** : Rose (#ec4899) - Pour les éléments d'accent
-- **Secondaire** : Orange (#f59e0b) - Pour les éléments secondaires
-- **Neutres** : Échelle de gris pour le texte et les arrière-plans
+Le projet est actuellement **sans habillage visuel** : aucune couleur, police,
+animation ni décoration n'est définie. Le HTML est structurel et sémantique, le
+JavaScript ne fait que du comportement (appels API, formulaires, état du DOM), et
+`css/base.css` ne contient que les quelques règles dont un comportement dépend
+réellement :
 
-### Typographie
-- **Police Principale** : Inter (Google Fonts)
-- **Hiérarchie** : Système de tailles responsive avec `clamp()`
-- **Contraste** : Optimisé pour l'accessibilité
+- masquage initial des modales (`.modal`, `.add-album-modal`) que le JS affiche
+- positionnement de la liste d'autocomplétion des albums, qui doit se superposer
+  au contenu suivant plutôt que le décaler
 
-### Icônes
-- **Librairie** : Lucide Icons (https://lucide.dev)
-- **Style** : Icônes vectorielles modernes et cohérentes
-- **Intégration** : Chargement via CDN avec initialisation automatique
-- **Responsive** : Icônes qui s'adaptent à tous les écrans
-
-### Composants
-- **Cartes** : Design glassmorphism avec backdrop-filter
-- **Boutons** : États hover, focus et loading avec icônes
-- **Navigation** : Header sticky avec blur effect
-- **Statistiques** : Grille responsive pour les métriques
-- **Édition Bio** : Interface intuitive avec icônes d'action
-
-## Responsive Design
-
-### Breakpoints
-- **Mobile** : < 480px
-- **Tablet** : 480px - 768px
-- **Desktop** : > 768px
-
-### Fonctionnalités Responsives
-- Grille flexible qui s'adapte à la taille d'écran
-- Typographie qui s'ajuste automatiquement
-- Navigation qui se réorganise sur mobile
-- Espacement adaptatif avec variables CSS
-- Icônes qui s'adaptent aux différentes tailles d'écran
+Tout le reste de l'apparence est volontairement laissé indéfini, pour qu'une
+direction visuelle puisse être appliquée par-dessus sans avoir à défaire quoi que
+ce soit au préalable. Les noms de classes présents dans le HTML sont là comme
+points d'accroche pour cet habillage à venir.
 
 ## Technologies Utilisées
 
@@ -63,8 +35,6 @@ Une plateforme web moderne et responsive pour créer et partager votre univers m
 - **Backend** : PHP 8+, PDO
 - **Base de Données** : MySQL
 - **Authentification** : Google OAuth2
-- **Design** : CSS Variables, Flexbox, Grid, Animations
-- **Icônes** : Lucide Icons (CDN)
 
 ## Structure du Projet
 
@@ -84,12 +54,13 @@ universon/
 │   ├── update_profile_visibility.php # Changer la visibilité du profil
 │   └── update_pseudo.php             # Changer le pseudo
 ├── css/                              # Styles CSS
-│   └── styles.css                    # Design system principal
+│   └── base.css                      # Règles fonctionnelles uniquement (pas d'habillage)
 ├── js/                               # JavaScript
 │   └── app.js                        # Logique frontend
 ├── migrations/                       # Scripts de migration de base de données
 ├── pages/                            # Pages principales
 │   ├── dashboard.php                 # Tableau de bord utilisateur
+│   ├── landing.php                   # Page d'accueil
 │   ├── login.php                     # Page de connexion
 │   └── public_profile.php            # Profil public (/@username)
 ├── util/                             # Utilitaires
@@ -102,18 +73,6 @@ universon/
 ├── package.json                      # Dépendances Node.js
 └── README.md                         # Documentation
 ```
-
-## Éléments Musicaux
-
-### Arrière-plan Animé
-- Icônes de musique Lucide flottantes
-- Animations CSS avec keyframes
-- Effets de parallaxe subtils
-
-### Interactions
-- Clics sur les icônes de musique
-- Effets de ripple
-- Sons musicaux (Web Audio API)
 
 ## Installation
 
@@ -169,71 +128,28 @@ universon/
    ```
    Puis accéder à `http://localhost:8000`
 
-## Personnalisation
+## Appliquer un habillage visuel
 
-### Modifier les Couleurs
-Les couleurs sont définies dans `:root` en CSS :
-```css
-:root {
-    --primary: #6366f1;
-    --accent: #ec4899;
-    --secondary: #f59e0b;
-}
-```
+Aucune direction visuelle n'est choisie à ce stade. Pour en appliquer une, ajoutez
+une feuille de style à côté de `css/base.css` et référencez-la dans les pages —
+sans modifier `base.css`, qui doit rester limité aux règles fonctionnelles.
 
-### Ajouter de Nouvelles Animations
-```css
-@keyframes nouvelle-animation {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-```
+Les principaux points d'accroche disponibles dans le HTML :
 
-### Modifier la Typographie
-```css
-:root {
-    --font-primary: 'Votre-Police', sans-serif;
-}
-```
+| Classe / id | Rôle |
+| --- | --- |
+| `.site-header`, `.site-logo`, `.site-footer` | En-tête et pied de page |
+| `.profile`, `.profile-avatar`, `.pseudo-display`, `.bio` | Identité et bio |
+| `.category`, `.album-list`, `.album`, `.album-title`, `.album-artist` | Collection par catégorie |
+| `.modal`, `.add-album-modal`, `.album-suggestions` | Modales et autocomplétion |
+| `.notification` (`-success` / `-error` / `-info`) | Messages créés par le JS |
+| `.error`, `.no-albums`, `.feedback` | États vides, erreurs, retours de saisie |
 
-### Utiliser d'Autres Icônes Lucide
-```html
-<!-- Exemple d'utilisation d'icônes Lucide -->
-<i data-lucide="heart"></i>
-<i data-lucide="star"></i>
-<i data-lucide="user"></i>
-```
+## Accessibilité
 
-## Tests Responsifs
-
-### Outils Recommandés
-- **Chrome DevTools** : Mode responsive
-- **Firefox Responsive Design Mode**
-- **BrowserStack** : Tests multi-appareils
-
-### Points de Test
-- Navigation sur mobile
-- Lisibilité du texte
-- Taille des boutons tactiles
-- Performance sur appareils lents
-- Affichage des icônes sur différents écrans
-
-## Optimisations
-
-### Performance
-- Images optimisées et lazy loading
-- CSS et JS minifiés
-- Animations optimisées avec `transform` et `opacity`
-- Debouncing des événements scroll
-- Icônes vectorielles légères (Lucide)
-
-### Accessibilité
-- Contraste des couleurs optimisé
 - Navigation au clavier
-- Focus states visibles
 - Textes alternatifs pour les images
-- Icônes avec attributs ARIA appropriés
+- Régions `aria-live` pour les messages de statut
 
 ## Fonctionnalités Principales
 
@@ -241,7 +157,6 @@ Les couleurs sont définies dans `:root` en CSS :
 - Recherche d'albums via une API musicale
 - Ajout d'albums à votre collection
 - Organisation par catégories (Favoris, Écoute fréquente, etc.)
-- Défilement horizontal pour une navigation fluide
 - Affichage des pochettes et informations
 
 ### Profil Utilisateur

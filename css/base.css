@@ -1,0 +1,43 @@
+/* ---------------------------------------------------------------------------
+   Universon — functional stylesheet.
+
+   This file intentionally contains NO visual design: no colours, fonts,
+   spacing, borders, shadows, animations or decoration. Every rule below
+   exists only because a behaviour in the HTML or JS depends on it.
+
+   All appearance is left undefined on purpose, so a UI direction can be
+   layered on top later without first having to undo anything.
+   --------------------------------------------------------------------------- */
+
+/* Generic hiding hook used by the markup and by JS. */
+[hidden] {
+    display: none !important;
+}
+
+/* Modals — JS toggles `display` inline (#pseudoModal) or the `.show`
+   class (album modals created by js/app.js). Both must start hidden. */
+.modal {
+    display: none;
+}
+
+.add-album-modal {
+    display: none;
+}
+
+.add-album-modal.show {
+    display: block;
+}
+
+/* Album search autocomplete — the suggestion list is populated and
+   shown/hidden by JS, and must overlay the content that follows the input
+   instead of pushing it down while the user types. */
+.album-input-group {
+    position: relative;
+}
+
+.album-suggestions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}

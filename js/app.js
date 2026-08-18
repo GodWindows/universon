@@ -1,11 +1,12 @@
-// Enhanced JavaScript for Universon
+// Universon — application logic.
+//
+// This file is behaviour only: data fetching, form handling and DOM state.
+// It deliberately contains no styling, animation or decoration.
 
 document.addEventListener('DOMContentLoaded', async function () {
     // Load categories first
     await loadCategories();
 
-    // Initialize Lucide icons
-    lucide.createIcons();
     // Share own profile handler: if no pseudo, open modal instead of copying
     const shareOwn = document.getElementById('shareOwnProfileBtn');
     if (shareOwn) {
@@ -16,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 e.preventDefault();
                 const pseudoModal = document.getElementById('pseudoModal');
                 if (pseudoModal) {
-                    pseudoModal.style.display = 'flex';
+                    pseudoModal.style.display = 'block';
                     const pseudoInput = document.getElementById('pseudoInput');
                     if (pseudoInput) pseudoInput.focus();
                 }
@@ -24,15 +25,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
             const url = shareOwn.getAttribute('data-share-url');
             if (!url) return;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(() => {
-                    showNotification('Lien du profil copié !', 'success');
-                }).catch(() => {
-                    prompt('Copiez le lien', url);
-                });
-            } else {
-                prompt('Copiez le lien', url);
-            }
+            copyToClipboard(url);
         });
     }
 
@@ -41,51 +34,22 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 function initApp() {
-    // Add smooth animations and interactions
-    addSmoothAnimations();
-
-    // Initialize logout functionality
     initLogout();
-
-    // Initialize bio editing functionality
     initBioEditing();
-
-    // Initialize profile visibility functionality
     initProfileVisibility();
-
-    // Initialize albums management functionality
     initAlbumsManagement();
-
-    // Add music note interactions
-    initMusicNotes();
-
-    // Add loading states
-    addLoadingStates();
 }
 
-function addSmoothAnimations() {
-    // Animate elements on scroll
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
+function copyToClipboard(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+            showNotification('Lien du profil copié !', 'success');
+        }).catch(() => {
+            prompt('Copiez le lien', url);
         });
-    }, observerOptions);
-
-    // Observe cards and other elements
-    document.querySelectorAll('.card, .stat-item').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(el);
-    });
+    } else {
+        prompt('Copiez le lien', url);
+    }
 }
 
 function initLogout() {
@@ -93,18 +57,9 @@ function initLogout() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function (e) {
             e.preventDefault();
-
-            // Add loading state
-            this.classList.add('loading');
-            this.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i><span>Déconnexion...</span>';
-
-            // Re-initialize icons after content change
-            lucide.createIcons();
-
-            // Simulate loading delay for better UX
-            setTimeout(() => {
-                window.location.href = '/api/logout.php?redirect=/index.php';
-            }, 500);
+            this.disabled = true;
+            this.textContent = 'Déconnexion...';
+            window.location.href = '/api/logout.php?redirect=/index.php';
         });
     }
 }
@@ -121,16 +76,13 @@ function initBioEditing() {
         return;
     }
 
-    let originalBio = bioContent.innerHTML;
+    let originalBio = bioTextarea.value;
 
     // Show edit form
     editBioBtn.addEventListener('click', function () {
         bioContent.style.display = 'none';
         bioEditForm.style.display = 'block';
         bioTextarea.focus();
-
-        // Re-initialize icons
-        lucide.createIcons();
     });
 
     // Cancel editing
@@ -150,12 +102,8 @@ function initBioEditing() {
             return;
         }
 
-        // Show loading state
-        this.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i><span>Sauvegarde...</span>';
+        this.textContent = 'Sauvegarde...';
         this.disabled = true;
-
-        // Re-initialize icons
-        lucide.createIcons();
 
         fetch('/api/update_bio.php', {
             method: 'POST',
@@ -169,13 +117,12 @@ function initBioEditing() {
                 if (data.success) {
                     // Update bio content
                     bioContent.innerHTML = `<p>${escapeHtml(newBio)}</p>`;
-                    originalBio = bioContent.innerHTML;
+                    originalBio = newBio;
 
                     // Hide form
                     bioEditForm.style.display = 'none';
                     bioContent.style.display = 'block';
 
-                    // Show success message
                     showNotification('Bio mise à jour avec succès !', 'success');
                 } else {
                     showNotification(data.error || 'Erreur lors de la mise à jour', 'error');
@@ -186,12 +133,8 @@ function initBioEditing() {
                 showNotification('Erreur de connexion', 'error');
             })
             .finally(() => {
-                // Reset button
-                this.innerHTML = '<i data-lucide="save"></i><span>Sauvegarder</span>';
+                this.textContent = 'Sauvegarder';
                 this.disabled = false;
-
-                // Re-initialize icons
-                lucide.createIcons();
             });
     });
 
@@ -210,13 +153,12 @@ function initProfileVisibility() {
     const pseudoFeedback = document.getElementById('pseudoFeedback');
     const savePseudoBtn = document.getElementById('savePseudoBtn');
     const cancelPseudoBtn = document.getElementById('cancelPseudoBtn');
-    const switchLabel = document.querySelector('.switch-label');
-    const switchLabelIcon = switchLabel.querySelector('i');
-    const switchLabelText = switchLabel.querySelector('.switch-text');
 
     if (!visibilityToggle || !pseudoModal || !pseudoInput || !pseudoFeedback || !savePseudoBtn || !cancelPseudoBtn) {
         return;
     }
+
+    const switchLabelText = document.querySelector('.switch-text');
 
     let pseudoCheckTimeout;
 
@@ -231,7 +173,6 @@ function initProfileVisibility() {
             return;
         }
 
-        // Update visibility
         updateProfileVisibility(newVisibility);
     });
 
@@ -239,23 +180,18 @@ function initProfileVisibility() {
     pseudoInput.addEventListener('input', function () {
         const pseudo = this.value.trim();
 
-        // Clear previous timeout
         clearTimeout(pseudoCheckTimeout);
 
-        // Reset feedback
-        pseudoFeedback.innerHTML = '';
-        pseudoFeedback.className = 'feedback';
+        pseudoFeedback.textContent = '';
         savePseudoBtn.disabled = true;
 
         if (pseudo.length < 3) {
-            pseudoFeedback.innerHTML = '<i data-lucide="alert-circle"></i> Le pseudo doit contenir au moins 3 caractères';
-            pseudoFeedback.className = 'feedback unavailable';
+            pseudoFeedback.textContent = 'Le pseudo doit contenir au moins 3 caractères';
             return;
         }
 
         if (pseudo.length > 45) {
-            pseudoFeedback.innerHTML = '<i data-lucide="alert-circle"></i> Le pseudo ne peut pas dépasser 45 caractères';
-            pseudoFeedback.className = 'feedback unavailable';
+            pseudoFeedback.textContent = 'Le pseudo ne peut pas dépasser 45 caractères';
             return;
         }
 
@@ -273,14 +209,9 @@ function initProfileVisibility() {
             return;
         }
 
-        // Show loading state
-        this.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i><span>Enregistrement...</span>';
+        this.textContent = 'Enregistrement...';
         this.disabled = true;
 
-        // Re-initialize icons
-        lucide.createIcons();
-
-        // Update pseudo
         updatePseudo(pseudo);
     });
 
@@ -290,16 +221,6 @@ function initProfileVisibility() {
         // Revert visibility toggle
         visibilityToggle.checked = false;
         updateSwitchLabel('private');
-    });
-
-    // Close modal on outside click
-    pseudoModal.addEventListener('click', function (e) {
-        if (e.target === this) {
-            hidePseudoModal();
-            // Revert visibility toggle
-            visibilityToggle.checked = false;
-            updateSwitchLabel('private');
-        }
     });
 
     // Close modal on escape key
@@ -319,15 +240,11 @@ function initProfileVisibility() {
     }
 
     function showPseudoModal() {
-        pseudoModal.style.display = 'flex';
+        pseudoModal.style.display = 'block';
         pseudoInput.focus();
         pseudoInput.value = '';
-        pseudoFeedback.innerHTML = '';
-        pseudoFeedback.className = 'feedback';
+        pseudoFeedback.textContent = '';
         savePseudoBtn.disabled = true;
-
-        // Re-initialize icons
-        lucide.createIcons();
     }
 
     function hidePseudoModal() {
@@ -335,41 +252,12 @@ function initProfileVisibility() {
     }
 
     function updateSwitchLabel(visibility) {
-        if (visibility === 'public') {
-            // on retire l'icone déjé présente. 
-            switchLabel.removeChild(switchLabel.children[0]);
-
-
-            //On crée et place une nouvelle icone
-            const newIcon = document.createElement("i");
-            newIcon.setAttribute('data-lucide', 'globe');
-
-            //On insère l'icone avant le texte
-            switchLabel.insertBefore(newIcon, switchLabel.firstChild);
-            switchLabelText.textContent = 'Public';
-        } else {
-            // on retire l'icone déjé présente. 
-            switchLabel.removeChild(switchLabel.children[0]);
-
-            //On crée et place une nouvelle icone
-            const newIcon = document.createElement("i");
-            newIcon.setAttribute('data-lucide', 'lock');
-
-            //On insère l'icone avant le texte
-            switchLabel.insertBefore(newIcon, switchLabel.firstChild);
-            switchLabelText.textContent = 'Privé';
-        }
-
-        // Re-initialize icons
-        lucide.createIcons();
+        if (!switchLabelText) return;
+        switchLabelText.textContent = visibility === 'public' ? 'Public' : 'Privé';
     }
 
     function checkPseudoAvailability(pseudo) {
-        pseudoFeedback.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Vérification...';
-        pseudoFeedback.className = 'feedback checking';
-
-        // Re-initialize icons
-        lucide.createIcons();
+        pseudoFeedback.textContent = 'Vérification...';
 
         fetch('/api/check_pseudo.php', {
             method: 'POST',
@@ -382,29 +270,21 @@ function initProfileVisibility() {
             .then(data => {
                 if (data.success) {
                     if (data.available) {
-                        pseudoFeedback.innerHTML = '<i data-lucide="check-circle"></i> Pseudo disponible !';
-                        pseudoFeedback.className = 'feedback available';
+                        pseudoFeedback.textContent = 'Pseudo disponible !';
                         savePseudoBtn.disabled = false;
                     } else {
-                        pseudoFeedback.innerHTML = '<i data-lucide="x-circle"></i> Pseudo déjà pris';
-                        pseudoFeedback.className = 'feedback unavailable';
+                        pseudoFeedback.textContent = 'Pseudo déjà pris';
                         savePseudoBtn.disabled = true;
                     }
                 } else {
-                    pseudoFeedback.innerHTML = '<i data-lucide="alert-circle"></i> Erreur de vérification';
-                    pseudoFeedback.className = 'feedback unavailable';
+                    pseudoFeedback.textContent = 'Erreur de vérification';
                     savePseudoBtn.disabled = true;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                pseudoFeedback.innerHTML = '<i data-lucide="alert-circle"></i> Erreur de connexion';
-                pseudoFeedback.className = 'feedback unavailable';
+                pseudoFeedback.textContent = 'Erreur de connexion';
                 savePseudoBtn.disabled = true;
-            })
-            .finally(() => {
-                // Re-initialize icons
-                lucide.createIcons();
             });
     }
 
@@ -419,55 +299,35 @@ function initProfileVisibility() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update pseudo display
                     updatePseudoDisplay(pseudo);
-
-                    // Hide modal
                     hidePseudoModal();
 
                     // Now update visibility to public
                     visibilityToggle.checked = true;
                     updateProfileVisibility('public');
 
-                    // Show success message
                     showNotification('Pseudo enregistré avec succès !', 'success');
                 } else {
-                    pseudoFeedback.innerHTML = `<i data-lucide="alert-circle"></i> ${data.error || 'Erreur lors de l\'enregistrement'}`;
-                    pseudoFeedback.className = 'feedback unavailable';
+                    pseudoFeedback.textContent = data.error || 'Erreur lors de l\'enregistrement';
                     savePseudoBtn.disabled = true;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                pseudoFeedback.innerHTML = '<i data-lucide="alert-circle"></i> Erreur de connexion';
-                pseudoFeedback.className = 'feedback unavailable';
+                pseudoFeedback.textContent = 'Erreur de connexion';
                 savePseudoBtn.disabled = true;
             })
             .finally(() => {
-                // Reset button
-                savePseudoBtn.innerHTML = '<i data-lucide="save"></i><span>Enregistrer</span>';
+                savePseudoBtn.textContent = 'Enregistrer';
                 savePseudoBtn.disabled = false;
-
-                // Re-initialize icons
-                lucide.createIcons();
             });
     }
 
     function updatePseudoDisplay(pseudo) {
-        const visibilityStatus = document.querySelector('.visibility-status');
-
-        if (visibilityStatus) {
-            // Remove existing pseudo display if any
-            const existingPseudo = visibilityStatus.querySelector('.pseudo-display');
-            if (existingPseudo) {
-                existingPseudo.remove();
-            }
-
-            // Add new pseudo display
-            const pseudoDisplay = document.createElement('span');
-            pseudoDisplay.className = 'pseudo-display';
+        const pseudoDisplay = document.querySelector('.pseudo-display');
+        if (pseudoDisplay) {
             pseudoDisplay.textContent = `@${pseudo}`;
-            visibilityStatus.appendChild(pseudoDisplay);
+            pseudoDisplay.removeAttribute('hidden');
         }
     }
 
@@ -482,10 +342,7 @@ function initProfileVisibility() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update switch label
                     updateSwitchLabel(visibility);
-
-                    // Show success message
                     showNotification(`Profil maintenant ${visibility === 'public' ? 'public' : 'privé'} !`, 'success');
                 } else {
                     // Revert toggle on error
@@ -501,25 +358,6 @@ function initProfileVisibility() {
             });
     }
 }
-
-// Share buttons
-document.addEventListener('DOMContentLoaded', function () {
-    const shareOwn = document.getElementById('shareOwnProfileBtn');
-    if (shareOwn && !shareOwn.disabled) {
-        shareOwn.addEventListener('click', function () {
-            const url = shareOwn.getAttribute('data-share-url');
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(() => {
-                    showNotification('Lien du profil copié !', 'success');
-                }).catch(() => {
-                    prompt('Copiez le lien', url);
-                });
-            } else {
-                prompt('Copiez le lien', url);
-            }
-        });
-    }
-});
 
 // Global variables for search functionality
 let albumSuggestions, albumNameInput;
@@ -539,7 +377,6 @@ async function loadCategories() {
             data.categories.forEach(category => {
                 categories[category.name] = category.description;
             });
-            console.log('Categories loaded:', categories);
         } else {
             console.error('Failed to load categories:', data.error);
         }
@@ -548,31 +385,20 @@ async function loadCategories() {
     }
 }
 
-
-
 function hideSuggestions(suggestionsElement = null) {
     let targetElement = suggestionsElement;
 
-    // Si pas d'élément spécifique, essayer albumSuggestions global
     if (!targetElement && typeof albumSuggestions !== 'undefined' && albumSuggestions) {
         targetElement = albumSuggestions;
     }
 
-    // Si toujours pas d'élément, essayer de le trouver directement
     if (!targetElement) {
         targetElement = document.getElementById('albumSuggestions');
     }
 
-    console.log("je vais cacher les suggestions");
-    console.log("targetElement:", targetElement);
-    console.log("albumSuggestions:", albumSuggestions);
-
     if (targetElement) {
         targetElement.style.display = 'none';
         targetElement.innerHTML = '';
-        console.log("Suggestions cachées avec succès");
-    } else {
-        console.log("targetElement est null/undefined, impossible de cacher");
     }
 }
 
@@ -606,10 +432,8 @@ function fetchAlbumSuggestions(query, suggestionsElement = null, inputElement = 
                 }));
 
                 if (suggestionsElement && inputElement) {
-                    // For category-albums.js usage
                     renderSuggestions(formattedResults, suggestionsElement, inputElement);
                 } else {
-                    // For app.js usage
                     renderSuggestions(formattedResults);
                 }
             })
@@ -647,14 +471,12 @@ function renderSuggestions(items, suggestionsElement = null, inputElement = null
     items.forEach(item => {
         const row = document.createElement('div');
         row.className = 'album-suggestion-item';
-        const coverHtml = item.cover ? '<img src="' + item.cover + '" alt="cover">' : '<i data-lucide="disc"></i>';
+        const coverHtml = item.cover ? '<img src="' + item.cover + '" alt="">' : '';
         row.innerHTML = `
-            <div class="album-suggestion-cover">${coverHtml}</div>
-            <div class="album-suggestion-info">
-                <div class="album-suggestion-title">${escapeHtml(item.title)}</div>
-                <div class="album-suggestion-artist">${escapeHtml(item.artist)}</div>
-            </div>
-            <button type="button" class="album-suggestion-select" title="Sélectionner" aria-label="Sélectionner"><i data-lucide="plus"></i></button>
+            ${coverHtml}
+            <span class="album-suggestion-title">${escapeHtml(item.title)}</span>
+            <span class="album-suggestion-artist">${escapeHtml(item.artist)}</span>
+            <button type="button" class="album-suggestion-select">Sélectionner</button>
         `;
         row.addEventListener('click', (e) => {
             e.preventDefault();
@@ -679,7 +501,6 @@ function renderSuggestions(items, suggestionsElement = null, inputElement = null
         targetElement.appendChild(row);
     });
     targetElement.style.display = 'block';
-    lucide.createIcons();
 }
 
 function escapeHtml(text) {
@@ -689,184 +510,36 @@ function escapeHtml(text) {
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <span>${message}</span>
-        <button class="notification-close">
-            <i data-lucide="x"></i>
-        </button>
-    `;
+    notification.setAttribute('role', 'status');
 
-    // Add to page
+    const text = document.createElement('span');
+    text.textContent = message;
+    notification.appendChild(text);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'notification-close';
+    closeBtn.textContent = 'Fermer';
+    closeBtn.addEventListener('click', () => hideNotification(notification));
+    notification.appendChild(closeBtn);
+
     document.body.appendChild(notification);
-
-    // Re-initialize icons
-    lucide.createIcons();
-
-    // Show notification
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
 
     // Auto-hide after 3 seconds
     setTimeout(() => {
         hideNotification(notification);
     }, 3000);
-
-    // Close button functionality
-    const closeBtn = notification.querySelector('.notification-close');
-    closeBtn.addEventListener('click', () => {
-        hideNotification(notification);
-    });
 }
 
 function hideNotification(notification) {
-    notification.classList.remove('show');
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-        }
-    }, 300);
-}
-
-function initMusicNotes() {
-    // Add click interactions to music notes
-    const musicNotes = document.querySelectorAll('.music-note');
-
-    musicNotes.forEach(note => {
-        note.addEventListener('click', function () {
-            // Create a ripple effect
-            createRipple(this);
-
-            // Play a subtle sound effect (optional)
-            playNoteSound();
-        });
-    });
-}
-
-function createRipple(element) {
-    const ripple = document.createElement('div');
-    ripple.style.position = 'absolute';
-    ripple.style.width = '20px';
-    ripple.style.height = '20px';
-    ripple.style.borderRadius = '50%';
-    ripple.style.background = 'rgba(99, 102, 241, 0.3)';
-    ripple.style.transform = 'scale(0)';
-    ripple.style.animation = 'ripple 0.6s linear';
-    ripple.style.left = '50%';
-    ripple.style.top = '50%';
-    ripple.style.marginLeft = '-10px';
-    ripple.style.marginTop = '-10px';
-
-    element.appendChild(ripple);
-
-    setTimeout(() => {
-        ripple.remove();
-    }, 600);
-}
-
-function playNoteSound() {
-    // Create a simple oscillator for a musical note sound
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
-        oscillator.type = 'sine';
-
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
-    } catch (e) {
-        // Fallback if Web Audio API is not supported
-        console.log('Audio not supported');
+    if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
     }
 }
 
-function addLoadingStates() {
-    // Add loading states to buttons
-    document.querySelectorAll('.btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            if (!this.classList.contains('btn-logout') && !this.classList.contains('btn-secondary')) {
-                this.classList.add('loading');
-                setTimeout(() => {
-                    this.classList.remove('loading');
-                }, 1000);
-            }
-        });
-    });
-}
-
-// Add CSS for ripple animation
-function addRippleStyles() {
-    if (!document.getElementById('ripple-styles')) {
-        const style = document.createElement('style');
-        style.id = 'ripple-styles';
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-            
-            .animate-spin {
-                animation: spin 1s linear infinite;
-            }
-            
-            @keyframes spin {
-                from {
-                    transform: rotate(0deg);
-                }
-                to {
-                    transform: rotate(360deg);
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-}
-
-// Initialize ripple styles
-addRippleStyles();
-
-// Add keyboard navigation support
-document.addEventListener('keydown', function (e) {
-    // Escape key to close modals or go back
-    if (e.key === 'Escape') {
-        // Close bio edit form if open
-        const bioEditForm = document.getElementById('bioEditForm');
-        if (bioEditForm && bioEditForm.style.display !== 'none') {
-            document.getElementById('cancelBioBtn').click();
-        }
-    }
-
-    // Enter key for buttons
-    if (e.key === 'Enter') {
-        const focusedElement = document.activeElement;
-        if (focusedElement && focusedElement.classList.contains('btn')) {
-            focusedElement.click();
-        }
-    }
-});
-
-// Add touch support for mobile devices
-if ('ontouchstart' in window) {
-    document.body.classList.add('touch-device');
-
-    // Add touch-specific interactions
-    document.addEventListener('touchstart', function () { }, { passive: true });
-}
-
-// Performance optimization: Debounce scroll events
+// Debounce helper used by the album search inputs
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -879,23 +552,7 @@ function debounce(func, wait) {
     };
 }
 
-// Optimize scroll performance
-const optimizedScroll = debounce(function () {
-    // Handle scroll events efficiently
-}, 16);
-
-window.addEventListener('scroll', optimizedScroll, { passive: true });
-
-// Add service worker for offline support (optional)
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-        // Register service worker for offline functionality
-        // navigator.serviceWorker.register('/sw.js');
-    });
-}
-
 function initAlbumsManagement() {
-    // Initialize dynamic category buttons
     initDynamicCategoryButtons();
 }
 
@@ -918,14 +575,12 @@ function initDynamicCategoryButtons() {
         const snakeCaseCategory = categoryMapping[categoryName] || categoryName;
 
         button.addEventListener('click', function () {
-            // Create a temporary modal for this category
             createDynamicModal(snakeCaseCategory);
         });
     });
 }
 
 function createDynamicModal(categoryName) {
-    // Create modal HTML dynamically
     const modalId = `add${categoryName.charAt(0).toUpperCase() + categoryName.slice(1)}Modal`;
     const inputId = `${categoryName}Input`;
     const suggestionsId = `${categoryName}Suggestions`;
@@ -946,31 +601,21 @@ function createDynamicModal(categoryName) {
     modal = document.createElement('div');
     modal.id = modalId;
     modal.className = 'add-album-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Ajouter un album');
     modal.innerHTML = `
-        <div class="add-album-content">
-            <div class="add-album-header">
-                <h3>Ajouter un album</h3>
-                <button class="close-btn" onclick="closeDynamicModal('${modalId}')">
-                    <i data-lucide="x"></i>
-                </button>
+        <h2>Ajouter un album</h2>
+        <button type="button" class="close-btn" onclick="closeDynamicModal('${modalId}')">Fermer</button>
+        <form id="${categoryName}Form">
+            <div class="album-input-group">
+                <label for="${inputId}">Nom de l'album</label>
+                <input type="text" id="${inputId}" class="album-input" name="album_name" placeholder="Ex: Dark Side of the Moon" maxlength="255" required autocomplete="off">
+                <div class="album-suggestions" id="${suggestionsId}" style="display:none;"></div>
             </div>
-            <form id="${categoryName}Form">
-                <div class="album-input-group">
-                    <input type="text" id="${inputId}" class="album-input" name="album_name" placeholder=" Ex: Dark Side of the Moon" maxlength="255" required autocomplete="off">
-                    <div class="album-suggestions" id="${suggestionsId}" style="display:none;"></div>
-                </div>
-                <div class="album-modal-actions" style="margin-top: 1.5rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeDynamicModal('${modalId}')">
-                        <i data-lucide="x"></i>
-                        <span>Annuler</span>
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i data-lucide="save"></i>
-                        <span>Ajouter</span>
-                    </button>
-                </div>
-            </form>
-        </div>
+            <button type="button" onclick="closeDynamicModal('${modalId}')">Annuler</button>
+            <button type="submit">Ajouter</button>
+        </form>
     `;
 
     document.body.appendChild(modal);
@@ -982,7 +627,6 @@ function createDynamicModal(categoryName) {
     const form = document.getElementById(`${categoryName}Form`);
 
     if (input && suggestions && form) {
-        // Add event listeners
         input.addEventListener('input', debounce(function () {
             const query = input.value.trim();
             if (query.length < 2) {
@@ -1031,20 +675,13 @@ function createDynamicModal(categoryName) {
 
         input.focus();
     }
-
-    lucide.createIcons();
 }
 
 function closeDynamicModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
+    if (modal && modal.parentNode) {
         modal.classList.remove('show');
-        // Remove modal from DOM after animation
-        setTimeout(() => {
-            if (modal.parentNode) {
-                modal.parentNode.removeChild(modal);
-            }
-        }, 300);
+        modal.parentNode.removeChild(modal);
     }
 }
 
@@ -1053,12 +690,10 @@ function addAlbumToCategory(albumName, category, inputElement, suggestionsElemen
     // Use dynamic categories from database
     const categoryDisplayName = categories[category] || category;
 
-    // Show loading state
     const saveBtn = inputElement.closest('form').querySelector('button[type="submit"]');
-    const originalContent = saveBtn.innerHTML;
-    saveBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i><span>Ajout...</span>';
+    const originalContent = saveBtn.textContent;
+    saveBtn.textContent = 'Ajout...';
     saveBtn.disabled = true;
-    lucide.createIcons();
 
     // Prepare album data
     const albumData = {
@@ -1084,11 +719,9 @@ function addAlbumToCategory(albumName, category, inputElement, suggestionsElemen
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Hide modal
                 const modal = inputElement.closest('.add-album-modal');
-                modal.classList.remove('show');
+                if (modal) modal.classList.remove('show');
 
-                // Show success message
                 showNotification(`Album ajouté aux ${categoryDisplayName} !`, 'success');
 
                 // Reload page to show new album
@@ -1104,10 +737,8 @@ function addAlbumToCategory(albumName, category, inputElement, suggestionsElemen
             showNotification('Erreur de connexion', 'error');
         })
         .finally(() => {
-            // Reset button
-            saveBtn.innerHTML = originalContent;
+            saveBtn.textContent = originalContent;
             saveBtn.disabled = false;
-            lucide.createIcons();
         });
 }
 
