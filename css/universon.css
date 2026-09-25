@@ -70,7 +70,6 @@
 
     /* Plans d'empilement (§ 3.8) */
     --z-wall-hover:  3;
-    --z-suggestions: 10;
     --z-scrim:       900;
     --z-modal:       1000;
     --z-toast:       1100;
@@ -545,10 +544,9 @@ p a:hover { color: var(--blue-hover); }
 }
 
 /* --- 5.15 Autocomplétion ------------------------------------------------ */
-/* base.css porte position/left/right : rien de tout cela n'est redéfini ici. */
+/* base.css porte le positionnement (dans le flux) : il n'est pas redéfini ici. */
 .album-suggestions {
-    top: calc(100% + var(--s-2));
-    z-index: var(--z-suggestions);
+    margin-top: var(--s-2);
     max-height: 264px;
     overflow: hidden;
     overflow-y: auto;

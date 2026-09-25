@@ -29,15 +29,9 @@
 }
 
 /* Album search autocomplete — the suggestion list is populated and
-   shown/hidden by JS, and must overlay the content that follows the input
-   instead of pushing it down while the user types. */
-.album-input-group {
-    position: relative;
-}
-
+   shown/hidden by JS. It lives inside the add-album modal, which scrolls
+   (overflow-y: auto): it stays in the flow so the modal grows to contain it,
+   instead of overlaying and being clipped by the modal's edge. */
 .album-suggestions {
-    position: absolute;
-    left: 0;
-    right: 0;
-    z-index: 1;
+    position: static;
 }
