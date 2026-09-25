@@ -594,25 +594,9 @@ function initAlbumsManagement() {
 }
 
 function initDynamicCategoryButtons() {
-    // Find all add album buttons (they have IDs like addMostplayedBtn, addGuiltypleasureBtn, etc.)
-    const addButtons = document.querySelectorAll('[id^="add"][id$="Btn"]');
-
-    addButtons.forEach(button => {
-        // Extract category name from button ID (e.g., "addMostplayedBtn" -> "most_played")
-        const buttonId = button.id;
-        const categoryName = buttonId.replace('add', '').replace('Btn', '').toLowerCase();
-
-        // Map the button IDs to actual category names
-        const categoryMapping = {
-            'favorite': 'favorite',
-            'guiltypleasure': 'guilty_pleasure',
-            'mostplayed': 'most_played'
-        };
-
-        const snakeCaseCategory = categoryMapping[categoryName] || categoryName;
-
+    document.querySelectorAll('button[data-category]').forEach(button => {
         button.addEventListener('click', function () {
-            createDynamicModal(snakeCaseCategory);
+            createDynamicModal(button.dataset.category);
         });
     });
 }

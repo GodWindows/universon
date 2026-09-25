@@ -113,12 +113,8 @@
         $categoriesAlbums[$category['name']] = get_user_albums_by_category($publicUser['id'], $category['name']);
     }
 
-    $publicUserAlbums = get_user_albums($publicUser['id']);
-
     $hasLogout    = (bool) $viewer;
-    $totalAlbums  = !empty($categories)
-        ? array_sum(array_map('count', $categoriesAlbums))
-        : count($publicUserAlbums);
+    $totalAlbums  = array_sum(array_map('count', $categoriesAlbums));
 
     $profileName = htmlspecialchars($publicUser['firstName'] . (!empty($publicUser['lastName']) ? ' ' . $publicUser['lastName'] : ''));
     $shareUrl = htmlspecialchars($site_url) . '/@' . htmlspecialchars($publicUser['pseudo']);
@@ -260,21 +256,6 @@
                 <?php endif; ?>
             </section>
             <?php endforeach; ?>
-
-        <?php elseif (!empty($publicUserAlbums)): ?>
-            <!-- Legacy fallback: uncategorised albums -->
-            <section class="category" aria-labelledby="cat-fallback">
-                <div class="cat-head">
-                    <h2 id="cat-fallback"><?= e('category.fallback') ?></h2>
-                    <div class="cat-head-aside">
-                        <span class="mo cat-meta"><?= e('category.meta', [
-                            'count' => count($publicUserAlbums),
-                            'n'     => '01',
-                        ]) ?></span>
-                    </div>
-                </div>
-                <?php pp_wall($publicUserAlbums); ?>
-            </section>
 
         <?php else: ?>
             <p class="no-albums"><?= e('category.empty') ?></p>

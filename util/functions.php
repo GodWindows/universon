@@ -149,32 +149,6 @@
         return false;
     }
 
-    function get_user_albums($userId)
-    {
-        // Now get albums from the 'favorite' category instead of user_albums table
-        return get_user_albums_by_category($userId, 'favorite');
-    }
-
-    function add_album_to_user($userId, $albumName)
-    {
-        // Create album data and add to favorite category
-        $albumData = [
-            'album_name' => $albumName,
-            'external_album_id' => null,
-            'external_artist_id' => null,
-            'artist_name' => null,
-            'image_url_60' => null,
-            'image_url_100' => null
-        ];
-        return add_album_to_category($userId, $albumData, 'favorite');
-    }
-
-    function remove_album_from_user($userId, $albumId)
-    {
-        // Remove from favorite category instead of user_albums table
-        return remove_album_from_category($userId, $albumId, 'favorite');
-    }
-
     function saveSessionToDb($sessionToken, $googleAccessToken, $email) {
         $conn = connect_database();
         if ($conn) {
@@ -286,52 +260,6 @@
             }
         }
         return null;
-    }
-
-    function add_or_get_album_with_metadata_and_link_user($userId, $albumData)
-    {
-        $conn = connect_database();
-        if (!$conn) {
-            return false;
-        }
-        try {
-            $conn->beginTransaction();
-
-            $externalAlbumId = isset($albumData["external_album_id"]) ? $albumData["external_album_id"] : null;
-            $albumName = isset($albumData["album_name"]) ? $albumData["album_name"] : null;
-            $externalArtistId = isset($albumData["external_artist_id"]) ? $albumData["external_artist_id"] : null;
-            $artistName = isset($albumData["artist_name"]) ? $albumData["artist_name"] : null;
-            $image60 = isset($albumData["image_url_60"]) ? $albumData["image_url_60"] : null;
-            $image100 = isset($albumData["image_url_100"]) ? $albumData["image_url_100"] : null;
-
-            if (!empty($externalAlbumId)) {
-                $stmt = $conn->prepare("SELECT id FROM albums WHERE external_album_id = ? LIMIT 1");
-                $stmt->execute([$externalAlbumId]);
-                $existing = $stmt->fetch(PDO::FETCH_ASSOC);
-                if ($existing && isset($existing["id"])) {
-                    $albumId = $existing["id"];
-                } else {
-                    $stmt = $conn->prepare("INSERT INTO albums (external_album_id, external_artist_id, name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?, ?, ?) ");
-                    $stmt->execute([$externalAlbumId, $externalArtistId, $albumName, $artistName, $image60, $image100]);
-                    $albumId = $conn->lastInsertId();
-                }
-            } else {
-                $stmt = $conn->prepare("INSERT INTO albums (name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$albumName, $artistName, $image60, $image100]);
-                $albumId = $conn->lastInsertId();
-            }
-
-            // No longer need to link to user_albums table since we use categories directly
-
-            $conn->commit();
-            return $albumId;
-        } catch (PDOException $e) {
-            if ($conn->inTransaction()) {
-                $conn->rollBack();
-            }
-            error_log("Error adding album with metadata: " . $e->getMessage());
-            return false;
-        }
     }
 
     // Fonctions pour gérer les catégories d'albums

@@ -165,11 +165,10 @@
 
         <div class="wrap">
 
-            <!-- Albums par catégorie — JS queries [id^="add"][id$="Btn"] -->
+            <!-- Albums par catégorie — JS queries button[data-category] -->
             <?php $catIndex = 0; foreach ($categories as $category):
                 $catIndex++;
                 $categoryAlbums = $categoriesAlbums[$category['name']] ?? [];
-                $btnId    = 'add' . ucfirst(str_replace('_', '', $category['name'])) . 'Btn';
                 $headId   = 'cat-' . $category['name'];
                 $catLabel = t('category.' . $category['name']);
             ?>
@@ -181,7 +180,7 @@
                             'count' => count($categoryAlbums),
                             'n'     => str_pad((string) $catIndex, 2, '0', STR_PAD_LEFT),
                         ]) ?></span>
-                        <button type="button" id="<?= $btnId ?>" class="btn btn--sm"><?= e('category.add') ?></button>
+                        <button type="button" data-category="<?= htmlspecialchars($category['name']) ?>" class="btn btn--sm"><?= e('category.add') ?></button>
                     </div>
                 </div>
 

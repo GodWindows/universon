@@ -41,10 +41,8 @@ points d'accroche pour cet habillage à venir.
 ```
 universon/
 ├── api/                              # API endpoints
-│   ├── add_album.php                 # Ajouter un album à la collection
 │   ├── add_album_to_category.php     # Ajouter un album à une catégorie
 │   ├── check_pseudo.php              # Vérifier la disponibilité d'un pseudo
-│   ├── delete_album.php              # Supprimer un album
 │   ├── get_albums_by_category.php    # Récupérer les albums par catégorie
 │   ├── get_categories.php            # Récupérer toutes les catégories
 │   ├── logout.php                    # Déconnexion
