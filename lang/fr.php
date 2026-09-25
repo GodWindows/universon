@@ -25,15 +25,33 @@ return [
     'nav.logout'                => 'Déconnexion',
     'nav.logging_out'           => 'Déconnexion...',
 
+    /* --- Langue ------------------------------------------------------- */
+    'lang.switch'               => 'Changer de langue',
+
+    /* --- Métadonnées (titres d'onglet, SEO) ----------------------------- */
+    'meta.og_locale'            => 'fr_FR',
+    'meta.landing.title'        => 'Universon — Montrez et partagez votre univers musical',
+    'meta.landing.description'  => "Créez votre profil musical, montrez vos musiques et partagez votre collection d'albums préférés en un seul lien. Universon met en valeur votre univers musical.",
+    'meta.landing.og_description' => "Créez votre profil musical et partagez votre collection d'albums préférés en un seul lien.",
+    'meta.landing.keywords'     => "profil musical, montrer mes musiques, partager ses musiques, collection musicale, collection d'albums, albums préférés, exposer ses albums, univers musical",
+    'meta.login.title'          => 'Connexion',
+    'meta.login.description'    => 'Connectez-vous à Universon pour créer et gérer votre collection musicale personnelle. Organisez vos albums préférés et partagez votre profil musical.',
+    'meta.login.og_description' => 'Créez votre univers musical personnel avec Universon.',
+    'meta.login.keywords'       => 'universon, connexion, login, musique, collection musicale, profil musical',
+    'meta.dashboard.title'      => 'Mon profil',
+    'meta.profile.description'  => 'Découvrez la collection musicale de @{pseudo} sur Universon.',
+    'meta.profile.bio_fallback' => 'Découvrez ma collection musicale sur Universon',
+    'meta.profile.keywords'     => 'profil musical, {name}, @{pseudo}, collection musicale, albums préférés, partager ses musiques, univers musical',
+
     /* --- Bandeau d'accueil -------------------------------------------- */
     'hero.eyebrow'              => 'Le Letterboxd des albums',
     'hero.title'                => "Ton mur d'albums, en un lien.",
-    'hero.lede'                 => "Ajoute les disques que tu écoutes, range-les en trois rayons, balance ton @ en bio. C'est tout.",
+    'hero.lede'                 => "Ajoute les disques que tu écoutes, range-les en quatre rayons, balance ton @ en bio. C'est tout.",
     'hero.cta.primary'          => 'Créer mon mur',
     'hero.cta.secondary'        => 'Voir @godwin →',
 
     /* --- Compteurs ----------------------------------------------------- */
-    'counters.shelves.value'    => '3',
+    'counters.shelves.value'    => '4',
     'counters.shelves.label'    => 'Rayons',
     'counters.albums.value'     => '∞',
     'counters.albums.label'     => 'Albums',
@@ -50,7 +68,7 @@ return [
     'steps.1.body'              => 'Avec Google. Pas de mot de passe à retenir, pas de formulaire.',
     'steps.2.index'             => '02',
     'steps.2.title'             => 'Remplis le mur',
-    'steps.2.body'              => 'Tape trois lettres, la pochette arrive. Range en coups de cœur, plus écoutés, plaisirs coupables.',
+    'steps.2.body'              => 'Tape trois lettres, la pochette arrive. Range en coups de cœur, plus écoutés, plaisirs coupables, premiers amours.',
     'steps.3.index'             => '03',
     'steps.3.title'             => 'Partage ton @',
     'steps.3.body'              => 'universon.fr/@toi. Visible sans compte, lisible partout.',

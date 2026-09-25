@@ -36,14 +36,14 @@
     $hasPseudo   = !empty($user['pseudo']);
     $shareUrl    = $hasPseudo ? $site_url . '/@' . $user['pseudo'] : '';
 ?><!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= APP_LOCALE ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="../img/logo.ico">
-    <title><?= htmlspecialchars($site_title) ?> — Mon profil</title>
+    <title><?= htmlspecialchars($site_title) ?> — <?= e('meta.dashboard.title') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -57,6 +57,7 @@
             <a href="/" class="site-logo"><?= e('brand.wordmark') ?><b><?= e('brand.dot') ?></b></a>
             <nav>
                 <button type="button" id="logoutBtn" class="btn btn-line"><?= e('nav.logout') ?></button>
+                <?= lang_switcher() ?>
             </nav>
         </header>
     </div>
@@ -241,47 +242,9 @@
     </div>
 
     <script>
-        window.UNIVERSON_I18N = <?= json_encode(array_merge([
-            /* Libellés de rayon : le fichier de langue fait foi à l'affichage (§ 9.3.4). */
-        ], array_combine(
-            array_map(function ($c) { return 'category.' . $c['name']; }, $categories),
-            array_map(function ($c) { return t('category.' . $c['name']); }, $categories)
-        ) ?: [], [
-            'dashboard.add.title'       => t('dashboard.add.title'),
-            'dashboard.add.context'     => t('dashboard.add.context'),
-            'dashboard.add.label'       => t('dashboard.add.label'),
-            'dashboard.add.placeholder' => t('dashboard.add.placeholder'),
-            'dashboard.add.cancel'      => t('dashboard.add.cancel'),
-            'dashboard.add.confirm'     => t('dashboard.add.confirm'),
-            'dashboard.add.saving'      => t('dashboard.add.saving'),
-            'dashboard.add.select'      => t('dashboard.add.select'),
-            'dashboard.add.empty'       => t('dashboard.add.empty'),
-            'dashboard.add.too_long'    => t('dashboard.add.too_long'),
-            'dashboard.remove.confirm'  => t('dashboard.remove.confirm'),
-            'dashboard.visibility.public'  => t('dashboard.visibility.public'),
-            'dashboard.visibility.private' => t('dashboard.visibility.private'),
-            'nav.logging_out'           => t('nav.logging_out'),
-            'notify.added'              => t('notify.added'),
-            'notify.removed'            => t('notify.removed'),
-            'notify.bio_saved'          => t('notify.bio_saved'),
-            'notify.link_copied'        => t('notify.link_copied'),
-            'notify.link_prompt'        => t('notify.link_prompt'),
-            'notify.visibility'         => t('notify.visibility'),
-            'notify.offline'            => t('notify.offline'),
-            'notify.error'              => t('notify.error'),
-            'notify.close'              => t('notify.close'),
-            'profile.bio.save'          => t('profile.bio.save'),
-            'profile.bio.saving'        => t('profile.bio.saving'),
-            'pseudo.save'               => t('pseudo.save'),
-            'pseudo.saving'             => t('pseudo.saving'),
-            'pseudo.saved'              => t('pseudo.saved'),
-            'pseudo.checking'           => t('pseudo.checking'),
-            'pseudo.available'          => t('pseudo.available'),
-            'pseudo.taken'              => t('pseudo.taken'),
-            'pseudo.too_short'          => t('pseudo.too_short'),
-            'pseudo.too_long'           => t('pseudo.too_long'),
-            'pseudo.check_error'        => t('pseudo.check_error'),
-        ]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        /* Chaînes lues par js/app.js ; les libellés de rayon (category.*) suivent
+           le fichier de langue, qui fait foi à l'affichage (§ 9.3.4). */
+        window.UNIVERSON_I18N = <?= i18n_json(['category.', 'dashboard.', 'notify.', 'nav.', 'profile.bio.', 'pseudo.']) ?>;
     </script>
     <script src="/js/app.js"></script>
 </body>

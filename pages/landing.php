@@ -16,29 +16,29 @@
     $isLoggedIn = isset($_COOKIE['session_token']) && $_COOKIE['session_token'] !== '';
     $buttonUrl  = $isLoggedIn ? '/pages/dashboard.php' : $url;
 ?><!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= APP_LOCALE ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Créez votre profil musical, montrez vos musiques et partagez votre collection d'albums préférés en un seul lien. Universon met en valeur votre univers musical.">
-    <meta name="keywords" content="profil musical, montrer mes musiques, partager ses musiques, collection musicale, collection d'albums, albums préférés, exposer ses albums, univers musical">
+    <meta name="description" content="<?= e('meta.landing.description') ?>">
+    <meta name="keywords" content="<?= e('meta.landing.keywords') ?>">
     <meta name="author" content="Universon">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="<?= htmlspecialchars($site_url) ?>/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Universon">
-    <meta property="og:locale" content="fr_FR">
+    <meta property="og:locale" content="<?= e('meta.og_locale') ?>">
     <meta property="og:url" content="<?= htmlspecialchars($site_url) ?>">
-    <meta property="og:title" content="Universon — Montrez et partagez votre univers musical">
-    <meta property="og:description" content="Créez votre profil musical et partagez votre collection d'albums préférés en un seul lien.">
+    <meta property="og:title" content="<?= e('meta.landing.title') ?>">
+    <meta property="og:description" content="<?= e('meta.landing.og_description') ?>">
     <meta property="og:image" content="<?= htmlspecialchars($site_url) ?>/img/planet.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Universon — Montrez et partagez votre univers musical">
-    <meta name="twitter:description" content="Créez votre profil musical et partagez votre collection d'albums préférés en un seul lien.">
+    <meta name="twitter:title" content="<?= e('meta.landing.title') ?>">
+    <meta name="twitter:description" content="<?= e('meta.landing.og_description') ?>">
     <meta name="twitter:image" content="<?= htmlspecialchars($site_url) ?>/img/planet.png">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/img/logo.ico">
-    <title>Universon — Montrez et partagez votre univers musical</title>
+    <title><?= e('meta.landing.title') ?></title>
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -47,10 +47,10 @@
         "url": "<?= htmlspecialchars($site_url) ?>/",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "Web",
-        "inLanguage": "fr",
-        "description": "Créez votre profil musical, montrez vos musiques et partagez votre collection d'albums préférés en un seul lien.",
+        "inLanguage": <?= json_encode(APP_LOCALE) ?>,
+        "description": <?= json_encode(t('meta.landing.og_description'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>,
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-        "keywords": "profil musical, montrer mes musiques, partager ses musiques, collection musicale, albums préférés, univers musical"
+        "keywords": <?= json_encode(t('meta.landing.keywords'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>
     }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,6 +67,7 @@
             <nav>
                 <a href="/@godwin" class="link-m"><?= e('nav.explore') ?></a>
                 <a href="<?= htmlspecialchars($buttonUrl) ?>" class="btn btn-line"><?= e('nav.login') ?></a>
+                <?= lang_switcher() ?>
             </nav>
         </header>
     </div>

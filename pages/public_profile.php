@@ -15,7 +15,7 @@
     /* ─── common head helper ─────────────────────────────────────────── */
     function pp_head($title, $description = '') {
         echo '<!DOCTYPE html>
-<html lang="fr">
+<html lang="' . APP_LOCALE . '">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,14 +36,15 @@
     function pp_header($logoutBtn = false) {
         echo '<div class="wrap">
     <header class="site-header">
-        <a href="/" class="site-logo">' . e('brand.wordmark') . '<b>' . e('brand.dot') . '</b></a>';
+        <a href="/" class="site-logo">' . e('brand.wordmark') . '<b>' . e('brand.dot') . '</b></a>
+        <nav>';
         if ($logoutBtn) {
             echo '
-        <nav>
-            <button type="button" id="logoutBtn" class="btn btn-line">' . e('nav.logout') . '</button>
-        </nav>';
+            <button type="button" id="logoutBtn" class="btn btn-line">' . e('nav.logout') . '</button>';
         }
         echo '
+            ' . lang_switcher() . '
+        </nav>
     </header>
 </div>';
     }
@@ -118,25 +119,27 @@
 
     $profileName = htmlspecialchars($publicUser['firstName'] . (!empty($publicUser['lastName']) ? ' ' . $publicUser['lastName'] : ''));
     $shareUrl = htmlspecialchars($site_url) . '/@' . htmlspecialchars($publicUser['pseudo']);
-    $bioMeta = !empty($publicUser['bio']) ? htmlspecialchars(substr($publicUser['bio'], 0, 200)) : 'Découvrez ma collection musicale sur Universon';
+    $bioMeta = !empty($publicUser['bio']) ? htmlspecialchars(substr($publicUser['bio'], 0, 200)) : htmlspecialchars(t('meta.profile.bio_fallback'));
 
     pp_head(
         $site_title . ' — ' . $profileName . ' (@' . htmlspecialchars($publicUser['pseudo']) . ')',
-        'Découvrez la collection musicale de @' . htmlspecialchars($publicUser['pseudo']) . ' sur Universon. ' . $bioMeta
+        t('meta.profile.description', ['pseudo' => $publicUser['pseudo']]) . ' ' . $bioMeta
     );
 
     // Extra meta for public profile
     $profileImage = !empty($publicUser['picture'])
         ? htmlspecialchars($publicUser['picture'])
         : htmlspecialchars($site_url) . '/img/planet.png';
-    $profileKeywords = 'profil musical, ' . $profileName . ', @' . htmlspecialchars($publicUser['pseudo'])
-        . ', collection musicale, albums préférés, partager ses musiques, univers musical';
+    $profileKeywords = htmlspecialchars(t('meta.profile.keywords', [
+        'name'   => trim($publicUser['firstName'] . ' ' . ($publicUser['lastName'] ?? '')),
+        'pseudo' => $publicUser['pseudo'],
+    ]));
 
     echo '<meta name="keywords" content="' . $profileKeywords . '">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="profile">
 <meta property="og:site_name" content="Universon">
-<meta property="og:locale" content="fr_FR">
+<meta property="og:locale" content="' . e('meta.og_locale') . '">
 <meta property="og:url" content="' . $shareUrl . '">
 <meta property="og:title" content="' . $profileName . ' — Universon">
 <meta property="og:description" content="' . $bioMeta . '">
@@ -149,7 +152,7 @@
 <script type="application/ld+json">' . json_encode([
         '@context' => 'https://schema.org',
         '@type' => 'ProfilePage',
-        'inLanguage' => 'fr',
+        'inLanguage' => APP_LOCALE,
         'url' => $shareUrl,
         'name' => $profileName . ' — Universon',
         'description' => $bioMeta,
