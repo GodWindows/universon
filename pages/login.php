@@ -2,6 +2,7 @@
     require __DIR__.  '/../vendor/autoload.php';
     require __DIR__.  '/../env_data.php'; // create this file after fetching the github code and store your client-id, client-secret and redirect uri in it
     require_once __DIR__.  '/../util/functions.php';
+    require_once __DIR__.  '/../util/i18n.php';
 
     $client = new Google\Client;
     $client->setClientId($clientID);
@@ -41,19 +42,25 @@
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
 
-    <title><?= $site_title ?> — Connexion</title>
+    <title><?= htmlspecialchars($site_title) ?> — Connexion</title>
     <link rel="icon" href="/img/logo.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/universon.css">
 </head>
 <body>
 
     <main class="login">
-        <h1><?= $site_title ?></h1>
-        <p>Créez votre collection musicale personnalisée</p>
+        <div class="login-in">
+            <h1><a href="/" class="site-logo"><?= e('brand.wordmark') ?><b><?= e('brand.dot') ?></b></a></h1>
+            <p><?= e('login.tagline') ?></p>
 
-        <a href="<?= $url ?>" class="btn-google">Continuer avec Google</a>
+            <a href="<?= htmlspecialchars($url) ?>" class="btn btn-google"><?= e('login.google') ?></a>
 
-        <p class="login-terms">En vous connectant, vous acceptez nos conditions d'utilisation</p>
+            <p class="mo login-terms"><?= e('login.terms') ?></p>
+        </div>
     </main>
 
 </body>

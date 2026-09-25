@@ -3,6 +3,29 @@
 // This file is behaviour only: data fetching, form handling and DOM state.
 // It deliberately contains no styling, animation or decoration.
 
+// Contenu textuel : les chaînes visibles viennent de lang/fr.php, injectées
+// par le gabarit dans window.UNIVERSON_I18N. Une clé absente rend « [ma.cle] »,
+// exactement comme t() côté PHP : le trou est visible, jamais silencieux.
+function s(key, vars) {
+    const table = window.UNIVERSON_I18N || {};
+    let value = Object.prototype.hasOwnProperty.call(table, key) ? table[key] : '[' + key + ']';
+    if (vars) {
+        Object.keys(vars).forEach(name => {
+            value = value.split('{' + name + '}').join(vars[name]);
+        });
+    }
+    return value;
+}
+
+// Libellé d'un rayon. Le fichier de langue fait foi à l'affichage ; la colonne
+// album_categories.description reste la source pour les scripts et l'API.
+function categoryLabel(name) {
+    const table = window.UNIVERSON_I18N || {};
+    const key = 'category.' + name;
+    if (Object.prototype.hasOwnProperty.call(table, key)) return table[key];
+    return categories[name] || name;
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
     // Load categories first
     await loadCategories();
@@ -43,12 +66,12 @@ function initApp() {
 function copyToClipboard(url) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(() => {
-            showNotification('Lien du profil copié !', 'success');
+            showNotification(s('notify.link_copied'), 'success');
         }).catch(() => {
-            prompt('Copiez le lien', url);
+            prompt(s('notify.link_prompt'), url);
         });
     } else {
-        prompt('Copiez le lien', url);
+        prompt(s('notify.link_prompt'), url);
     }
 }
 
@@ -58,7 +81,7 @@ function initLogout() {
         logoutBtn.addEventListener('click', function (e) {
             e.preventDefault();
             this.disabled = true;
-            this.textContent = 'Déconnexion...';
+            this.textContent = s('nav.logging_out');
             window.location.href = '/api/logout.php?redirect=/index.php';
         });
     }
@@ -102,7 +125,7 @@ function initBioEditing() {
             return;
         }
 
-        this.textContent = 'Sauvegarde...';
+        this.textContent = s('profile.bio.saving');
         this.disabled = true;
 
         fetch('/api/update_bio.php', {
@@ -123,17 +146,17 @@ function initBioEditing() {
                     bioEditForm.style.display = 'none';
                     bioContent.style.display = 'block';
 
-                    showNotification('Bio mise à jour avec succès !', 'success');
+                    showNotification(s('notify.bio_saved'), 'success');
                 } else {
-                    showNotification(data.error || 'Erreur lors de la mise à jour', 'error');
+                    showNotification(data.error || s('notify.error'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showNotification('Erreur de connexion', 'error');
+                showNotification(s('notify.offline'), 'error');
             })
             .finally(() => {
-                this.textContent = 'Sauvegarder';
+                this.textContent = s('profile.bio.save');
                 this.disabled = false;
             });
     });
@@ -162,6 +185,14 @@ function initProfileVisibility() {
 
     let pseudoCheckTimeout;
 
+    // Le message de statut porte son état en classe : la couleur est prescrite
+    // par la feuille d'habillage (§ 5.19), jamais posée ici.
+    function setFeedback(text, state) {
+        pseudoFeedback.textContent = text;
+        pseudoFeedback.classList.toggle('is-ok', state === 'ok');
+        pseudoFeedback.classList.toggle('is-error', state === 'error');
+    }
+
     // Handle visibility toggle
     visibilityToggle.addEventListener('change', function () {
         const newVisibility = this.checked ? 'public' : 'private';
@@ -182,16 +213,16 @@ function initProfileVisibility() {
 
         clearTimeout(pseudoCheckTimeout);
 
-        pseudoFeedback.textContent = '';
+        setFeedback('');
         savePseudoBtn.disabled = true;
 
         if (pseudo.length < 3) {
-            pseudoFeedback.textContent = 'Le pseudo doit contenir au moins 3 caractères';
+            setFeedback(s('pseudo.too_short'));
             return;
         }
 
         if (pseudo.length > 45) {
-            pseudoFeedback.textContent = 'Le pseudo ne peut pas dépasser 45 caractères';
+            setFeedback(s('pseudo.too_long'));
             return;
         }
 
@@ -209,7 +240,7 @@ function initProfileVisibility() {
             return;
         }
 
-        this.textContent = 'Enregistrement...';
+        this.textContent = s('pseudo.saving');
         this.disabled = true;
 
         updatePseudo(pseudo);
@@ -243,7 +274,7 @@ function initProfileVisibility() {
         pseudoModal.style.display = 'block';
         pseudoInput.focus();
         pseudoInput.value = '';
-        pseudoFeedback.textContent = '';
+        setFeedback('');
         savePseudoBtn.disabled = true;
     }
 
@@ -253,11 +284,13 @@ function initProfileVisibility() {
 
     function updateSwitchLabel(visibility) {
         if (!switchLabelText) return;
-        switchLabelText.textContent = visibility === 'public' ? 'Public' : 'Privé';
+        switchLabelText.textContent = visibility === 'public'
+            ? s('dashboard.visibility.public')
+            : s('dashboard.visibility.private');
     }
 
     function checkPseudoAvailability(pseudo) {
-        pseudoFeedback.textContent = 'Vérification...';
+        setFeedback(s('pseudo.checking'));
 
         fetch('/api/check_pseudo.php', {
             method: 'POST',
@@ -270,20 +303,20 @@ function initProfileVisibility() {
             .then(data => {
                 if (data.success) {
                     if (data.available) {
-                        pseudoFeedback.textContent = 'Pseudo disponible !';
+                        setFeedback(s('pseudo.available'), 'ok');
                         savePseudoBtn.disabled = false;
                     } else {
-                        pseudoFeedback.textContent = 'Pseudo déjà pris';
+                        setFeedback(s('pseudo.taken'), 'error');
                         savePseudoBtn.disabled = true;
                     }
                 } else {
-                    pseudoFeedback.textContent = 'Erreur de vérification';
+                    setFeedback(s('pseudo.check_error'), 'error');
                     savePseudoBtn.disabled = true;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                pseudoFeedback.textContent = 'Erreur de connexion';
+                setFeedback(s('notify.offline'), 'error');
                 savePseudoBtn.disabled = true;
             });
     }
@@ -306,19 +339,19 @@ function initProfileVisibility() {
                     visibilityToggle.checked = true;
                     updateProfileVisibility('public');
 
-                    showNotification('Pseudo enregistré avec succès !', 'success');
+                    showNotification(s('pseudo.saved'), 'success');
                 } else {
-                    pseudoFeedback.textContent = data.error || 'Erreur lors de l\'enregistrement';
+                    setFeedback(data.error || s('notify.error'), 'error');
                     savePseudoBtn.disabled = true;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                pseudoFeedback.textContent = 'Erreur de connexion';
+                setFeedback(s('notify.offline'), 'error');
                 savePseudoBtn.disabled = true;
             })
             .finally(() => {
-                savePseudoBtn.textContent = 'Enregistrer';
+                savePseudoBtn.textContent = s('pseudo.save');
                 savePseudoBtn.disabled = false;
             });
     }
@@ -343,18 +376,22 @@ function initProfileVisibility() {
             .then(data => {
                 if (data.success) {
                     updateSwitchLabel(visibility);
-                    showNotification(`Profil maintenant ${visibility === 'public' ? 'public' : 'privé'} !`, 'success');
+                    showNotification(s('notify.visibility', {
+                        state: visibility === 'public'
+                            ? s('dashboard.visibility.public')
+                            : s('dashboard.visibility.private')
+                    }), 'success');
                 } else {
                     // Revert toggle on error
                     visibilityToggle.checked = !visibilityToggle.checked;
-                    showNotification(data.error || 'Erreur lors de la mise à jour', 'error');
+                    showNotification(data.error || s('notify.error'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 // Revert toggle on error
                 visibilityToggle.checked = !visibilityToggle.checked;
-                showNotification('Erreur de connexion', 'error');
+                showNotification(s('notify.offline'), 'error');
             });
     }
 }
@@ -476,7 +513,7 @@ function renderSuggestions(items, suggestionsElement = null, inputElement = null
             ${coverHtml}
             <span class="album-suggestion-title">${escapeHtml(item.title)}</span>
             <span class="album-suggestion-artist">${escapeHtml(item.artist)}</span>
-            <button type="button" class="album-suggestion-select">Sélectionner</button>
+            <button type="button" class="album-suggestion-select">${escapeHtml(s('dashboard.add.select'))}</button>
         `;
         row.addEventListener('click', (e) => {
             e.preventDefault();
@@ -521,7 +558,7 @@ function showNotification(message, type = 'info') {
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
     closeBtn.className = 'notification-close';
-    closeBtn.textContent = 'Fermer';
+    closeBtn.textContent = s('notify.close');
     closeBtn.addEventListener('click', () => hideNotification(notification));
     notification.appendChild(closeBtn);
 
@@ -603,18 +640,27 @@ function createDynamicModal(categoryName) {
     modal.className = 'add-album-modal';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', 'Ajouter un album');
+    modal.setAttribute('aria-label', s('dashboard.add.title'));
     modal.innerHTML = `
-        <h2>Ajouter un album</h2>
-        <button type="button" class="close-btn" onclick="closeDynamicModal('${modalId}')">Fermer</button>
-        <form id="${categoryName}Form">
-            <div class="album-input-group">
-                <label for="${inputId}">Nom de l'album</label>
-                <input type="text" id="${inputId}" class="album-input" name="album_name" placeholder="Ex: Dark Side of the Moon" maxlength="255" required autocomplete="off">
-                <div class="album-suggestions" id="${suggestionsId}" style="display:none;"></div>
+        <div class="modal-head">
+            <div>
+                <h2>${escapeHtml(s('dashboard.add.title'))}</h2>
+                <span class="mo modal-context">${escapeHtml(s('dashboard.add.context', { category: categoryLabel(categoryName) }))}</span>
             </div>
-            <button type="button" onclick="closeDynamicModal('${modalId}')">Annuler</button>
-            <button type="submit">Ajouter</button>
+            <button type="button" class="btn btn-line btn--sm close-btn" onclick="closeDynamicModal('${modalId}')">${escapeHtml(s('notify.close'))}</button>
+        </div>
+        <form id="${categoryName}Form">
+            <div class="modal-body">
+                <div class="album-input-group">
+                    <label for="${inputId}" class="field-label">${escapeHtml(s('dashboard.add.label'))}</label>
+                    <input type="text" id="${inputId}" class="album-input" name="album_name" placeholder="${escapeHtml(s('dashboard.add.placeholder'))}" maxlength="255" required autocomplete="off">
+                    <div class="album-suggestions" id="${suggestionsId}" style="display:none;"></div>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-line" onclick="closeDynamicModal('${modalId}')">${escapeHtml(s('dashboard.add.cancel'))}</button>
+                <button type="submit" class="btn">${escapeHtml(s('dashboard.add.confirm'))}</button>
+            </div>
         </form>
     `;
 
@@ -647,12 +693,12 @@ function createDynamicModal(categoryName) {
             const albumName = input.value.trim();
 
             if (albumName.length < 1) {
-                showNotification('Le nom de l\'album ne peut pas être vide', 'error');
+                showNotification(s('dashboard.add.empty'), 'error');
                 return;
             }
 
             if (albumName.length > 255) {
-                showNotification('Le nom de l\'album est trop long', 'error');
+                showNotification(s('dashboard.add.too_long'), 'error');
                 return;
             }
 
@@ -687,12 +733,11 @@ function closeDynamicModal(modalId) {
 
 // Global function for adding albums to categories
 function addAlbumToCategory(albumName, category, inputElement, suggestionsElement) {
-    // Use dynamic categories from database
-    const categoryDisplayName = categories[category] || category;
+    const categoryDisplayName = categoryLabel(category);
 
     const saveBtn = inputElement.closest('form').querySelector('button[type="submit"]');
     const originalContent = saveBtn.textContent;
-    saveBtn.textContent = 'Ajout...';
+    saveBtn.textContent = s('dashboard.add.saving');
     saveBtn.disabled = true;
 
     // Prepare album data
@@ -722,19 +767,19 @@ function addAlbumToCategory(albumName, category, inputElement, suggestionsElemen
                 const modal = inputElement.closest('.add-album-modal');
                 if (modal) modal.classList.remove('show');
 
-                showNotification(`Album ajouté aux ${categoryDisplayName} !`, 'success');
+                showNotification(s('notify.added', { category: categoryDisplayName }), 'success');
 
                 // Reload page to show new album
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
             } else {
-                showNotification(data.error || 'Erreur lors de l\'ajout à la catégorie', 'error');
+                showNotification(data.error || s('notify.error'), 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('Erreur de connexion', 'error');
+            showNotification(s('notify.offline'), 'error');
         })
         .finally(() => {
             saveBtn.textContent = originalContent;
@@ -744,10 +789,9 @@ function addAlbumToCategory(albumName, category, inputElement, suggestionsElemen
 
 // Global function for removing albums from categories
 function removeAlbumFromCategory(albumId, category) {
-    // Use dynamic categories from database
-    const categoryDisplayName = categories[category] || category;
+    const categoryDisplayName = categoryLabel(category);
 
-    if (!confirm(`Êtes-vous sûr de vouloir retirer cet album des ${categoryDisplayName} ?`)) {
+    if (!confirm(s('dashboard.remove.confirm', { category: categoryDisplayName }))) {
         return;
     }
 
@@ -764,17 +808,17 @@ function removeAlbumFromCategory(albumId, category) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showNotification(`Album retiré des ${categoryDisplayName} !`, 'success');
+                showNotification(s('notify.removed', { category: categoryDisplayName }), 'success');
                 // Reload page to show updated categories
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
             } else {
-                showNotification(data.error || 'Erreur lors de la suppression de la catégorie', 'error');
+                showNotification(data.error || s('notify.error'), 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('Erreur de connexion', 'error');
+            showNotification(s('notify.offline'), 'error');
         });
 }

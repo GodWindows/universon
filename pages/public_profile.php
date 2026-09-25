@@ -2,6 +2,7 @@
     require_once __DIR__ . '/../vendor/autoload.php';
     require_once __DIR__ . '/../env_data.php';
     require_once __DIR__ . '/../util/functions.php';
+    require_once __DIR__ . '/../util/i18n.php';
 
     $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $username = null;
@@ -10,14 +11,6 @@
     } elseif (isset($_GET['u']) && $_GET['u'] !== '') {
         $username = trim($_GET['u']);
     }
-
-    if (!$username) {
-        http_response_code(400);
-        echo 'Requête invalide.';
-        exit();
-    }
-
-    $publicUser = get_user_public_min_by_pseudo($username);
 
     /* ─── common head helper ─────────────────────────────────────────── */
     function pp_head($title, $description = '') {
@@ -30,59 +23,71 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/img/logo.ico">
     <title>' . htmlspecialchars($title) . '</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/universon.css">
 </head>
 <body>';
     }
 
     /* ─── common header ──────────────────────────────────────────────── */
     function pp_header($logoutBtn = false) {
-        echo '<header class="site-header">
-    <a href="/" class="site-logo">Universon</a>';
+        echo '<div class="wrap">
+    <header class="site-header">
+        <a href="/" class="site-logo">' . e('brand.wordmark') . '<b>' . e('brand.dot') . '</b></a>';
         if ($logoutBtn) {
             echo '
-    <button type="button" id="logoutBtn">Déconnexion</button>';
+        <nav>
+            <button type="button" id="logoutBtn" class="btn btn-line">' . e('nav.logout') . '</button>
+        </nav>';
         }
         echo '
-</header>';
+    </header>
+</div>';
     }
+
+    /* ─── shared error screen (§ 5.20, § 6.5) ────────────────────────── */
+    function pp_error($key, $vars = []) {
+        echo '
+<main class="error">
+    <h1>' . e('error.' . $key . '.title') . '</h1>
+    <p>' . e('error.' . $key . '.body', $vars) . '</p>
+    <a href="/" class="btn">' . e('error.back') . '</a>
+</main>
+</body>
+</html>';
+    }
+
+    /* ─── 400 ─────────────────────────────────────────────────────────── */
+    if (!$username) {
+        http_response_code(400);
+        pp_head($site_title . ' — ' . t('error.badrequest.title'), t('error.badrequest.body'));
+        pp_header();
+        pp_error('badrequest');
+        exit();
+    }
+
+    $publicUser = get_user_public_min_by_pseudo($username);
 
     /* ─── 404 ─────────────────────────────────────────────────────────── */
     if ($publicUser === null) {
         http_response_code(404);
         pp_head(
-            $site_title . ' — Profil introuvable',
-            'Ce profil n\'existe pas ou n\'est plus disponible.'
+            $site_title . ' — ' . t('error.notfound.title'),
+            t('error.notfound.body', ['pseudo' => $username])
         );
         pp_header();
-?>
-<main class="error">
-    <h1>Profil introuvable</h1>
-    <p>Le profil @<?= htmlspecialchars($username) ?> n'existe pas ou n'est plus disponible sur Universon.</p>
-    <a href="/">Retour à l'accueil</a>
-</main>
-</body>
-</html>
-<?php
+        pp_error('notfound', ['pseudo' => $username]);
         exit();
     }
 
     /* ─── PRIVATE ─────────────────────────────────────────────────────── */
     if ($publicUser['profile_visibility'] !== 'public') {
-        pp_head(
-            $site_title . ' — Profil privé',
-            'Ce profil est privé et n\'est pas accessible au public.'
-        );
+        pp_head($site_title . ' — ' . t('error.private.title'), t('error.private.body'));
         pp_header();
-?>
-<main class="error">
-    <h1>Profil privé</h1>
-    <p>Ce profil est privé et n'est pas accessible au public.</p>
-    <a href="/">Retour à l'accueil</a>
-</main>
-</body>
-</html>
-<?php
+        pp_error('private');
         exit();
     }
 
@@ -104,17 +109,16 @@
     }
 
     $categoriesAlbums = [];
-    $hasAnyAlbum = false;
     foreach ($categories as $category) {
-        $albums = get_user_albums_by_category($publicUser['id'], $category['name']);
-        $categoriesAlbums[$category['name']] = $albums;
-        if (!empty($albums)) $hasAnyAlbum = true;
+        $categoriesAlbums[$category['name']] = get_user_albums_by_category($publicUser['id'], $category['name']);
     }
 
     $publicUserAlbums = get_user_albums($publicUser['id']);
 
-    $isOwnProfile = $viewer && isset($viewer['pseudo']) && $viewer['pseudo'] === $publicUser['pseudo'];
-    $hasLogout = (bool) $viewer;
+    $hasLogout    = (bool) $viewer;
+    $totalAlbums  = !empty($categories)
+        ? array_sum(array_map('count', $categoriesAlbums))
+        : count($publicUserAlbums);
 
     $profileName = htmlspecialchars($publicUser['firstName'] . (!empty($publicUser['lastName']) ? ' ' . $publicUser['lastName'] : ''));
     $shareUrl = htmlspecialchars($site_url) . '/@' . htmlspecialchars($publicUser['pseudo']);
@@ -163,102 +167,135 @@
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>';
 
     pp_header($hasLogout);
+
+    /* Rendu d'un mur en lecture seule. Aucun bouton de retrait ici (§ 6.4). */
+    function pp_wall(array $albums) {
+        echo '<ul class="album-list">';
+        $i = 0;
+        foreach ($albums as $album) {
+            $i++;
+            $imgSrc = !empty($album['image_url_100']) ? $album['image_url_100'] : ($album['image_url_60'] ?? '');
+            echo '<li class="album">';
+            if ($imgSrc) {
+                echo '<img src="' . htmlspecialchars($imgSrc) . '"'
+                   . ' alt="' . htmlspecialchars($album['name']) . '"'
+                   . ' loading="lazy" onerror="this.remove();">';
+            }
+            echo '<span class="album-idx">' . str_pad((string) $i, 2, '0', STR_PAD_LEFT) . '</span>';
+            echo '<div class="album-meta">';
+            echo '<h3 class="album-title">' . htmlspecialchars($album['name']) . '</h3>';
+            if (!empty($album['artist_name'])) {
+                echo '<p class="album-artist">' . htmlspecialchars($album['artist_name']) . '</p>';
+            }
+            echo '</div></li>';
+        }
+        echo '</ul>';
+    }
 ?>
 
 <main>
 
-    <section class="profile" aria-labelledby="profile-title">
-        <?php if (!empty($publicUser['picture'])): ?>
-            <img src="<?= htmlspecialchars($publicUser['picture']) ?>" alt="<?= $profileName ?>" class="profile-avatar">
+    <div class="wrap">
+        <section class="profile" aria-labelledby="profile-title">
+            <?php if (!empty($publicUser['picture'])): ?>
+                <img src="<?= htmlspecialchars($publicUser['picture']) ?>" alt="<?= $profileName ?>" class="profile-avatar">
+            <?php endif; ?>
+
+            <div>
+                <h1 id="profile-title"><?= $profileName ?></h1>
+                <p><span class="pseudo-display">@<?= htmlspecialchars($publicUser['pseudo']) ?></span></p>
+
+                <?php if (!empty($publicUser['bio'])): ?>
+                    <p class="bio"><?= htmlspecialchars($publicUser['bio']) ?></p>
+                <?php else: ?>
+                    <p class="bio"><?= e('profile.bio.empty') ?></p>
+                <?php endif; ?>
+
+                <div class="profile-actions">
+                    <button type="button" id="shareProfileBtn" class="btn" data-share-url="<?= $shareUrl ?>">
+                        <?= e('profile.share') ?>
+                    </button>
+                </div>
+
+                <div class="stats-row">
+                    <div>
+                        <span class="mo"><?= e('profile.stat.albums') ?></span>
+                        <b><?= (int) $totalAlbums ?></b>
+                    </div>
+                    <div>
+                        <span class="mo"><?= e('profile.stat.shelves') ?></span>
+                        <b><?= count($categories) ?></b>
+                    </div>
+                    <?php if (!empty($publicUser['created_at'])): ?>
+                    <div>
+                        <span class="mo"><?= e('profile.stat.since') ?></span>
+                        <b><?= htmlspecialchars(date('Y', strtotime($publicUser['created_at']))) ?></b>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
+
+        <?php if (!empty($categories)): ?>
+            <?php $catIndex = 0; foreach ($categories as $category):
+                $catIndex++;
+                $albums = $categoriesAlbums[$category['name']] ?? [];
+                $headId = 'cat-' . $category['name'];
+            ?>
+            <section class="category" aria-labelledby="<?= htmlspecialchars($headId) ?>">
+                <div class="cat-head">
+                    <h2 id="<?= htmlspecialchars($headId) ?>"><?= e('category.' . $category['name']) ?></h2>
+                    <div class="cat-head-aside">
+                        <span class="mo cat-meta"><?= e('category.meta', [
+                            'count' => count($albums),
+                            'n'     => str_pad((string) $catIndex, 2, '0', STR_PAD_LEFT),
+                        ]) ?></span>
+                    </div>
+                </div>
+
+                <?php if (!empty($albums)): ?>
+                    <?php pp_wall($albums); ?>
+                <?php else: ?>
+                    <p class="no-albums"><?= e('category.empty') ?></p>
+                <?php endif; ?>
+            </section>
+            <?php endforeach; ?>
+
+        <?php elseif (!empty($publicUserAlbums)): ?>
+            <!-- Legacy fallback: uncategorised albums -->
+            <section class="category" aria-labelledby="cat-fallback">
+                <div class="cat-head">
+                    <h2 id="cat-fallback"><?= e('category.fallback') ?></h2>
+                    <div class="cat-head-aside">
+                        <span class="mo cat-meta"><?= e('category.meta', [
+                            'count' => count($publicUserAlbums),
+                            'n'     => '01',
+                        ]) ?></span>
+                    </div>
+                </div>
+                <?php pp_wall($publicUserAlbums); ?>
+            </section>
+
+        <?php else: ?>
+            <p class="no-albums"><?= e('category.empty') ?></p>
         <?php endif; ?>
 
-        <h1 id="profile-title"><?= $profileName ?></h1>
-        <p><span class="pseudo-display">@<?= htmlspecialchars($publicUser['pseudo']) ?></span></p>
-
-        <button type="button" id="shareProfileBtn" data-share-url="<?= $shareUrl ?>">
-            <?= $isOwnProfile ? 'Partager mon profil' : 'Partager ce profil' ?>
-        </button>
-
-        <div class="bio">
-            <h2>Bio</h2>
-            <?php if (!empty($publicUser['bio'])): ?>
-                <p><?= htmlspecialchars($publicUser['bio']) ?></p>
-            <?php else: ?>
-                <p>Aucune bio renseignée.</p>
-            <?php endif; ?>
-        </div>
-    </section>
-
-    <?php if (!empty($categories)): ?>
-        <?php foreach ($categories as $category):
-            $albums = $categoriesAlbums[$category['name']] ?? [];
-        ?>
-        <section class="category">
-            <h2><?= htmlspecialchars($category['description']) ?></h2>
-
-            <?php if (!empty($albums)): ?>
-            <ul class="album-list">
-                <?php foreach ($albums as $album):
-                    $imgSrc = !empty($album['image_url_100']) ? $album['image_url_100'] : ($album['image_url_60'] ?? '');
-                ?>
-                <li class="album">
-                    <?php if ($imgSrc): ?>
-                        <img src="<?= htmlspecialchars($imgSrc) ?>"
-                             alt="<?= htmlspecialchars($album['name']) ?>"
-                             loading="lazy"
-                             onerror="this.remove();">
-                    <?php endif; ?>
-                    <h3 class="album-title"><?= htmlspecialchars($album['name']) ?></h3>
-                    <?php if (!empty($album['artist_name'])): ?>
-                    <p class="album-artist"><?= htmlspecialchars($album['artist_name']) ?></p>
-                    <?php endif; ?>
-                </li>
-                <?php endforeach; ?>
-            </ul>
-            <?php else: ?>
-            <p class="no-albums">Aucun album dans cette catégorie.</p>
-            <?php endif; ?>
-        </section>
-        <?php endforeach; ?>
-
-    <?php elseif (!empty($publicUserAlbums)): ?>
-        <!-- Legacy fallback: uncategorised albums -->
-        <section class="category">
-            <h2>Albums publics</h2>
-            <ul class="album-list">
-                <?php foreach ($publicUserAlbums as $album):
-                    $imgSrc = !empty($album['image_url_100']) ? $album['image_url_100'] : ($album['image_url_60'] ?? '');
-                ?>
-                <li class="album">
-                    <?php if ($imgSrc): ?>
-                        <img src="<?= htmlspecialchars($imgSrc) ?>"
-                             alt="<?= htmlspecialchars($album['name']) ?>"
-                             loading="lazy"
-                             onerror="this.remove();">
-                    <?php endif; ?>
-                    <h3 class="album-title"><?= htmlspecialchars($album['name']) ?></h3>
-                    <?php if (!empty($album['artist_name'])): ?>
-                    <p class="album-artist"><?= htmlspecialchars($album['artist_name']) ?></p>
-                    <?php endif; ?>
-                </li>
-                <?php endforeach; ?>
-            </ul>
-        </section>
-
-    <?php else: ?>
-        <p class="no-albums">Aucune collection publique à afficher pour le moment.</p>
-    <?php endif; ?>
+        <footer class="site-footer">
+            <p class="big"><?= e('footer.big') ?><b><?= e('brand.dot') ?></b></p>
+            <p class="mo"><?= e('footer.rights', ['year' => date('Y')]) ?></p>
+        </footer>
+    </div>
 
 </main>
 
 <p id="ppToast" role="status" aria-live="polite"></p>
 
-<footer class="site-footer">
-    <p>© <?= date('Y') ?> Universon</p>
-    <p>Votre univers musical à partager</p>
-</footer>
-
 <script>
+    var UNIVERSON_PP = {
+        copied: <?= json_encode(t('notify.link_copied'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+        prompt: <?= json_encode(t('notify.link_prompt'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+    };
+
     /* ── Share button ── */
     (function () {
         var btn = document.getElementById('shareProfileBtn');
@@ -273,10 +310,10 @@
             }
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(url).then(function () {
-                    showToast('Lien copié dans le presse-papier');
-                }).catch(function () { prompt('Copiez le lien', url); });
+                    showToast(UNIVERSON_PP.copied);
+                }).catch(function () { prompt(UNIVERSON_PP.prompt, url); });
             } else {
-                prompt('Copiez le lien', url);
+                prompt(UNIVERSON_PP.prompt, url);
             }
         });
     })();

@@ -1,0 +1,857 @@
+/* ===========================================================================
+   Universon — feuille d'habillage.
+   Direction « MUR », version claire. Implémente docs/DESIGN.md v1.0.
+
+   base.css est chargé AVANT ce fichier : il porte la mécanique d'affichage
+   (modales, autocomplétion) et n'est jamais contredit ici.
+
+   Ordre du fichier (§ 11.3) :
+     1. Jetons          4. Composants (ordre du § 5)
+     2. Remise à zéro   5. Écrans
+     3. Primitives      6. Requêtes média, groupées par palier décroissant
+   =========================================================================== */
+
+
+/* ===========================================================================
+   1. JETONS (§ 3)
+   Aucune valeur littérale ailleurs dans la feuille : tout passe par var(--…).
+   =========================================================================== */
+
+:root {
+    /* Plans (§ 3.1.1) */
+    --bg:            #EDE6D6;
+    --bg-2:          #E4DBC7;
+    --card:          #F7F3E9;
+    --overlay:       rgba(23, 21, 14, 0.93);
+    --scrim:         rgba(23, 21, 14, 0.58);
+
+    /* Encre (§ 3.1.2) */
+    --ink:           #17150E;
+    --ink-2:         #585240;
+    --ink-3:         #635D4E;
+    --on-ink:        #F7F3E9;
+    --on-blue:       #FFFFFF;
+    --on-red:        #FFFFFF;
+
+    /* Traits (§ 3.1.3) */
+    --line:          #D2C8B0;
+    --line-strong:   #B9AC8E;
+    --line-input:    #8C7E56;
+
+    /* Accent (§ 3.1.4) */
+    --blue:          #0038FF;
+    --blue-hover:    #0030DB;
+    --blue-press:    #0024A8;
+    --blue-wash:     rgba(0, 56, 255, 0.10);
+    --blue-lift:     #8FB0FF;
+
+    /* Signal (§ 3.1.5) */
+    --red:           #BC2E0B;
+    --red-hover:     #A02709;
+    --red-press:     #851F07;
+    --ok:            #0E6A4E;
+    --dot-ok:        #7FF3C4;
+    --dot-err:       #FFD9CE;
+
+    /* Espacement (§ 3.3) */
+    --s-1: 4px;   --s-2: 8px;   --s-3: 12px;  --s-4: 16px;
+    --s-5: 20px;  --s-6: 24px;  --s-7: 32px;  --s-8: 36px;
+    --s-9: 40px;  --s-10: 48px; --s-11: 56px; --s-12: 64px;
+    --s-13: 72px; --s-14: 88px; --s-15: 120px;
+
+    /* Rayons (§ 3.4) */
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 24px; --r-pill: 999px;
+
+    /* Mouvement (§ 3.7) */
+    --ease:    cubic-bezier(0.3, 0, 0.2, 1);
+    --t-fast:  140ms;
+    --t-base:  260ms;
+    --t-slow:  420ms;
+
+    /* Plans d'empilement (§ 3.8) */
+    --z-wall-hover:  3;
+    --z-suggestions: 10;
+    --z-scrim:       900;
+    --z-modal:       1000;
+    --z-toast:       1100;
+}
+
+
+/* ===========================================================================
+   2. REMISE À ZÉRO (§ 11.4)
+   =========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: 'Familjen Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+img { display: block; max-width: 100%; }
+ul, ol { list-style: none; }
+button { font: inherit; color: inherit; background: none; border: 0; }
+::selection { background-color: var(--blue); color: var(--on-blue); }
+
+/* Focus unique (§ 8.2). Deux exceptions seulement : les contrôles de saisie
+   (halo cobalt, § 5.14) et les tuiles du mur (:focus-within, § 5.11). */
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* Nom accessible d'un contrôle dont l'apparence est portée par un autre
+   élément. Mécanisme, non décoration : aucune valeur de design ici. */
+.sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+
+/* ===========================================================================
+   3. PRIMITIVES (§ 11.3)
+   =========================================================================== */
+
+/* --- Conteneur (§ 3.10) ------------------------------------------------- */
+.wrap {
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: var(--s-6);
+}
+
+/* --- Étiquette mono (§ 11.4) -------------------------------------------- */
+.mo {
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; line-height: 1.4;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--ink-3);
+}
+
+/* --- Dalle (§ 5.7) ------------------------------------------------------ */
+.slab {
+    background-color: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+}
+.slab-row { display: grid; }
+.slab-cell { padding: var(--s-6); border-right: 1px solid var(--line); }
+.slab-cell:last-child { border-right: 0; }
+
+/* --- Boutons (§ 5.1) ---------------------------------------------------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 12px var(--s-6);
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--on-blue);
+    background-color: var(--blue);
+    border: 1px solid var(--blue);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    transition:
+        background-color var(--t-fast) var(--ease),
+        border-color     var(--t-fast) var(--ease),
+        color            var(--t-fast) var(--ease);
+}
+.btn:hover  { background-color: var(--blue-hover); border-color: var(--blue-hover); }
+.btn:active { background-color: var(--blue-press); border-color: var(--blue-press); }
+.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.btn:disabled,
+.btn[aria-disabled="true"] {
+    background-color: var(--bg-2);
+    border-color: var(--line);
+    color: var(--ink-3);
+    cursor: not-allowed;
+}
+
+.btn-line          { background-color: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn-line:hover    { background-color: var(--blue-wash); color: var(--blue); border-color: var(--blue); }
+.btn-line:active   { background-color: var(--blue-wash); color: var(--blue-press); border-color: var(--blue-press); }
+
+.btn--sm { padding: var(--s-2) var(--s-4); font-size: 9px; }
+
+/* L'état désactivé d'un .btn-line reprend l'état désactivé plein : la couleur
+   est explicite, jamais une opacité (§ 5.1.2). */
+.btn-line:disabled,
+.btn-line[aria-disabled="true"] {
+    background-color: var(--bg-2);
+    border-color: var(--line);
+    color: var(--ink-3);
+}
+
+/* --- Liens (§ 5.2) ------------------------------------------------------ */
+.link-m {
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; line-height: 1.4;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--ink-2); text-decoration: none;
+    transition: color var(--t-fast) var(--ease);
+}
+.link-m:hover { color: var(--blue); }
+.link-m:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: var(--r-xs); }
+
+p a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+p a:hover { color: var(--blue-hover); }
+
+/* --- Champs de saisie (§ 5.14) ------------------------------------------ */
+.field, #pseudoInput, #bioTextarea, .album-input {
+    width: 100%;
+    padding: 12px var(--s-4);
+    font-family: 'Familjen Grotesk', system-ui, sans-serif;
+    font-size: 16px; line-height: 1.5;
+    color: var(--ink);
+    background-color: var(--bg);
+    border: 1px solid var(--line-input);
+    border-radius: var(--r-sm);
+    outline: 0;
+    transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+.field::placeholder,
+#pseudoInput::placeholder,
+#bioTextarea::placeholder,
+.album-input::placeholder { color: var(--ink-3); }
+
+.field:focus, #pseudoInput:focus, #bioTextarea:focus, .album-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-wash);
+}
+.field:invalid:not(:placeholder-shown) {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(188, 46, 11, 0.12);
+}
+.field:disabled, #pseudoInput:disabled, #bioTextarea:disabled, .album-input:disabled {
+    background-color: var(--bg-2);
+    color: var(--ink-3);
+    cursor: not-allowed;
+}
+#bioTextarea { min-height: 116px; resize: vertical; }
+
+/* Étiquette d'un champ : jamais masquée, jamais remplacée par un placeholder. */
+.field-label,
+.album-input-group label {
+    display: block;
+    margin-bottom: var(--s-2);
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; line-height: 1.4;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--ink-3);
+}
+
+
+/* ===========================================================================
+   4. COMPOSANTS (ordre du § 5)
+   =========================================================================== */
+
+/* --- 5.3 En-tête -------------------------------------------------------- */
+.site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; border-bottom: 1px solid var(--line);
+}
+.site-logo {
+    font-size: 20px; font-weight: 700; line-height: 1.2;
+    letter-spacing: -0.045em; color: var(--ink); text-decoration: none;
+}
+.site-logo b { color: var(--blue); font-weight: inherit; }
+.site-header nav { display: flex; align-items: center; gap: var(--s-4); }
+
+/* --- 5.4 Pied de page --------------------------------------------------- */
+.site-footer {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    flex-wrap: wrap; gap: var(--s-6);
+    padding-block: var(--s-10) var(--s-12);
+}
+.site-footer .big {
+    font-size: 30px; font-weight: 700; line-height: 1.05; letter-spacing: -0.05em;
+}
+.site-footer .big b { color: var(--blue); font-weight: inherit; }
+
+/* --- 5.5 Bandeau d'accueil ---------------------------------------------- */
+.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+.hero-wall {
+    position: absolute; inset: 0;
+    display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 1fr; gap: 0;
+    opacity: 0.5; filter: saturate(0.62);
+}
+.hero-wall > * { aspect-ratio: 1; }
+.hero::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+        rgba(237, 230, 214, 0.74) 0%,
+        rgba(237, 230, 214, 0.93) 56%,
+        var(--bg) 100%);
+}
+.hero-in { position: relative; z-index: 2; padding-block: var(--s-15) var(--s-14); }
+.hero h1 {
+    font-size: clamp(46px, 8.2vw, 116px);
+    font-weight: 700; line-height: 0.92; letter-spacing: -0.055em; max-width: 15ch;
+}
+.hero > .wrap > .mo { display: block; margin-bottom: var(--s-6); color: var(--blue); }
+.hero p { margin-top: var(--s-6); max-width: 44ch; font-size: 19px; line-height: 1.45; color: var(--ink-2); }
+.cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4); margin-top: var(--s-8); }
+
+/* --- 5.6 Compteurs / 5.7 Dalle ------------------------------------------ */
+.counters { grid-template-columns: repeat(4, 1fr); margin-block: var(--s-8); }
+.counters b { display: block; font-size: 36px; font-weight: 700; line-height: 1; letter-spacing: -0.05em; }
+.counters span { display: block; margin-top: var(--s-2); }
+
+.steps { grid-template-columns: repeat(3, 1fr); }
+.steps .mo { color: var(--blue); }
+.steps h3 { margin-top: var(--s-4); font-size: 22px; font-weight: 600; line-height: 1.25; letter-spacing: -0.03em; }
+.steps p  { margin-top: var(--s-2); font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+
+/* --- 5.8 Tête de section ------------------------------------------------ */
+.section-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    flex-wrap: wrap; gap: var(--s-6);
+    margin-bottom: var(--s-8);
+}
+.section-head h2 {
+    font-size: clamp(26px, 3.6vw, 42px);
+    font-weight: 700; line-height: 1; letter-spacing: -0.05em;
+}
+
+/* --- 5.9 Bloc profil ---------------------------------------------------- */
+.profile {
+    display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s-6);
+    padding-block: var(--s-11) var(--s-9);
+}
+.profile-avatar {
+    flex: none; width: 100px; height: 100px;
+    border-radius: var(--r-pill); object-fit: cover;
+    border: 1px solid var(--line-strong);
+}
+.profile > div { flex: 1; min-width: 260px; }
+.profile h1 { font-size: clamp(34px, 5.4vw, 60px); font-weight: 700; line-height: 0.98; letter-spacing: -0.05em; }
+.pseudo-display {
+    display: inline-block; margin-top: var(--s-3);
+    padding: 5px var(--s-3);
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 12px; font-weight: 500; line-height: 1.4; letter-spacing: 0.06em;
+    color: var(--blue); background-color: var(--blue-wash); border-radius: var(--r-pill);
+}
+.bio, #bioContent p { margin-top: var(--s-4); max-width: 56ch; font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+.profile-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-6); }
+.stats-row { display: flex; flex-wrap: wrap; gap: var(--s-7); margin-top: var(--s-6); }
+.stats-row b { display: block; font-family: 'DM Mono', ui-monospace, monospace; font-size: 15px; font-weight: 500; line-height: 1.4; letter-spacing: 0; color: var(--ink); }
+.stats-row span { display: block; }
+
+/* --- 5.10 Tête de catégorie --------------------------------------------- */
+.cat-head {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: var(--s-5);
+    padding-block: var(--s-6) var(--s-4);
+}
+.cat-head h2 {
+    font-size: clamp(20px, 2.6vw, 28px);
+    font-weight: 700; line-height: 1.1; letter-spacing: -0.045em;
+}
+.cat-head-aside { display: flex; align-items: center; gap: var(--s-5); }
+.cat-meta { white-space: nowrap; }
+
+/* --- 5.11 Mur d'albums -------------------------------------------------- */
+.album-list {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0;
+    margin: 0 0 var(--s-8);
+    padding: 0;
+    list-style: none;
+    background-color: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+}
+.album,
+.album-card-horizontal {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    cursor: pointer;
+    outline: 1px solid var(--line);
+    outline-offset: -1px;
+}
+/* Pochette absente. La tuile porte une plaque : un disque centré, dans le
+   beige du plan en creux assombri d'un cran. Aucune couleur nouvelle — le
+   disque emprunte --line-strong, le fond --bg-2. Le rayon de 27% est celui du
+   cercle de .cv1, repris pour ne pas introduire de valeur inédite.
+   La plaque est le fond de la tuile : l'image la recouvre quand elle charge,
+   et elle réapparaît si onerror retire une pochette cassée. Les cellules de
+   grille vides, qui ne sont pas des <li>, gardent le fond nu de la dalle. */
+.album,
+.album-card-horizontal {
+    background-color: var(--bg-2);
+    background-image: radial-gradient(circle at 50% 50%, var(--line-strong) 0 27%, transparent 27%);
+}
+
+.album img,
+.album-card-horizontal img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover;
+    filter: saturate(0.9);
+    transition: filter var(--t-base) var(--ease), transform var(--t-slow) var(--ease);
+}
+.album:hover,
+.album:focus-within,
+.album-card-horizontal:hover,
+.album-card-horizontal:focus-within {
+    outline: 3px solid var(--blue);
+    outline-offset: -3px;
+    z-index: var(--z-wall-hover);
+}
+.album:hover img,
+.album:focus-within img,
+.album-card-horizontal:hover img,
+.album-card-horizontal:focus-within img { filter: saturate(1.05); transform: scale(1.06); }
+
+.album-meta {
+    position: absolute; inset-inline: 0; bottom: 0; z-index: 2;
+    padding: var(--s-3);
+    color: var(--on-ink);
+    background: linear-gradient(180deg, rgba(23, 21, 14, 0), var(--overlay) 55%);
+    transform: translateY(101%);
+    transition: transform var(--t-base) var(--ease);
+}
+.album:hover .album-meta,
+.album:focus-within .album-meta,
+.album-card-horizontal:hover .album-meta,
+.album-card-horizontal:focus-within .album-meta { transform: translateY(0); }
+
+.album-title {
+    font-size: 13px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em;
+}
+.album-artist {
+    margin-top: 3px;
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 9px; font-weight: 500; line-height: 1.3;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--blue-lift);
+}
+.album-idx {
+    position: absolute; top: var(--s-2); left: var(--s-2); z-index: 2;
+    padding: 2px var(--s-2);
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 9px; font-weight: 500; letter-spacing: 0.10em;
+    color: #FFFFFF; background-color: rgba(23, 21, 14, 0.62);
+    border-radius: var(--r-pill);
+    opacity: 0;
+    transition: opacity var(--t-base) var(--ease);
+}
+.album:hover .album-idx,
+.album:focus-within .album-idx,
+.album-card-horizontal:hover .album-idx,
+.album-card-horizontal:focus-within .album-idx { opacity: 1; }
+
+/* 5.11.7 Variante propriétaire : bouton de retrait. */
+.remove-album-btn {
+    position: absolute; top: var(--s-2); right: var(--s-2); z-index: 3;
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 28px; min-width: 28px;
+    padding-inline: var(--s-2);
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 9px; font-weight: 500; line-height: 1.3;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--on-red);
+    background-color: rgba(23, 21, 14, 0.62);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    opacity: 0;
+    transition:
+        background-color var(--t-fast) var(--ease),
+        border-color     var(--t-fast) var(--ease),
+        color            var(--t-fast) var(--ease);
+}
+.remove-album-btn:hover  { background-color: var(--red); }
+.remove-album-btn:active { background-color: var(--red-press); }
+.album-card-horizontal:hover .remove-album-btn,
+.album-card-horizontal:focus-within .remove-album-btn,
+.remove-album-btn:focus-visible { opacity: 1; }
+
+/* --- 5.12 État vide ----------------------------------------------------- */
+.no-albums {
+    margin-bottom: var(--s-8);
+    padding: var(--s-9);
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; line-height: 1.4;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-3); text-align: center;
+    background-color: var(--bg-2);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--r-lg);
+}
+
+/* --- 5.13 Ligne de réglage et interrupteur ------------------------------ */
+.row {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: var(--s-4);
+    max-width: 640px; margin-inline: auto; margin-bottom: var(--s-6);
+    padding: var(--s-4) var(--s-6);
+    background-color: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+}
+.row-title { font-size: 19px; font-weight: 600; line-height: 1.3; letter-spacing: -0.03em; }
+.row-hint { display: block; margin-top: var(--s-2); }
+
+.switch { display: inline-flex; align-items: center; gap: var(--s-3); }
+
+/* La case native reste dans le flux et focalisable ; l'apparence est portée
+   par le <label> associé (§ 5.13.2). */
+.switch input[type="checkbox"] {
+    width: 0; height: 0;
+    appearance: none; -webkit-appearance: none;
+    opacity: 0; border: 0;
+}
+.switch input[type="checkbox"] + label {
+    position: relative;
+    display: block;
+    width: 52px; height: 29px;
+    background-color: var(--bg-2);
+    border: 1px solid var(--line-input);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    transition:
+        background-color var(--t-base) var(--ease),
+        border-color     var(--t-base) var(--ease);
+}
+.switch input[type="checkbox"] + label::before {
+    content: "";
+    position: absolute; top: 3px; left: 3px;
+    width: 21px; height: 21px;
+    background-color: var(--card);
+    border-radius: var(--r-pill);
+    transition: transform var(--t-base) var(--ease);
+}
+.switch input[type="checkbox"]:checked + label {
+    background-color: var(--blue);
+    border-color: var(--blue);
+}
+.switch input[type="checkbox"]:checked + label::before { transform: translateX(23px); }
+.switch input[type="checkbox"]:focus-visible + label {
+    outline: 2px solid var(--ink); outline-offset: 2px;
+}
+
+/* --- 5.15 Autocomplétion ------------------------------------------------ */
+/* base.css porte position/left/right : rien de tout cela n'est redéfini ici. */
+.album-suggestions {
+    top: calc(100% + var(--s-2));
+    z-index: var(--z-suggestions);
+    max-height: 264px;
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+}
+.album-suggestion-item {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    column-gap: var(--s-3);
+    align-items: center;
+    padding: 10px var(--s-3);
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease);
+}
+.album-suggestion-item:last-child { border-bottom: 0; }
+.album-suggestion-item:hover,
+.album-suggestion-item.is-active { background-color: var(--blue-wash); }
+.album-suggestion-item img {
+    grid-column: 1; grid-row: 1 / span 2;
+    width: 40px; height: 40px;
+    object-fit: cover;
+    border-radius: var(--r-xs);
+}
+.album-suggestion-title {
+    grid-column: 2; grid-row: 1;
+    font-size: 15px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em;
+}
+.album-suggestion-artist {
+    grid-column: 2; grid-row: 2;
+    margin-top: 2px;
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 9px; font-weight: 500; line-height: 1.3;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--ink-3);
+}
+/* L'indicateur de sélection est le glyphe ↵ (§ 4), jamais un libellé. */
+.album-suggestion-select {
+    grid-column: 3; grid-row: 1 / span 2;
+    font-size: 0;
+    color: var(--ink-3);
+    cursor: pointer;
+}
+.album-suggestion-select::after {
+    content: "\21B5";
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 9px; font-weight: 500; line-height: 1.3; letter-spacing: 0.10em;
+}
+
+/* --- 5.16 Modales ------------------------------------------------------- */
+/* Le centrage passe par le positionnement, jamais par display:flex : la
+   mécanique style.display / .show de base.css n'est pas contredite.
+
+   Divergence assumée avec le bloc normatif du § 5.16, qui centre par
+   `top:50%; left:50%; transform: translate(-50%,-50%)`. Un `transform` fait du
+   panneau le bloc conteneur de ses descendants en `position: fixed` : le voile
+   `::before { position: fixed; inset: 0 }` se calerait alors sur le panneau au
+   lieu du viewport, et serait rogné par `overflow-y: auto`. Résultat : aucun
+   voile plein écran. Le centrage par `inset: 0; margin: auto` est visuellement
+   identique, sans transform, donc le voile se résout bien sur le viewport.
+   `height: fit-content` donne la hauteur définie qu'exige `margin: auto`. */
+.modal, .add-album-modal {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    z-index: var(--z-modal);
+    width: min(560px, calc(100vw - 32px));
+    height: fit-content;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    background-color: var(--card);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+}
+.modal::before, .add-album-modal::before {
+    content: ""; position: fixed; inset: 0; z-index: -1;
+    background-color: var(--scrim);
+}
+.modal-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: var(--s-4);
+    padding: var(--s-6) var(--s-6) var(--s-1);
+}
+.modal-head h2 {
+    font-size: 24px; font-weight: 700; line-height: 1.15; letter-spacing: -0.045em;
+}
+.modal-context { display: block; margin-top: 6px; }
+.modal-body { padding: var(--s-4) var(--s-6) var(--s-6); }
+.modal-lede { margin-bottom: var(--s-4); font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.modal-foot {
+    display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--s-3);
+    padding: var(--s-4) var(--s-6);
+    background-color: var(--bg);
+    border-top: 1px solid var(--line);
+}
+
+/* --- 5.17 Notifications ------------------------------------------------- */
+.notification, #ppToast {
+    position: fixed;
+    bottom: var(--s-6); left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-toast);
+    display: inline-flex; align-items: center; gap: 18px;
+    padding: var(--s-3) var(--s-3) var(--s-3) var(--s-5);
+    font-size: 14px; line-height: 1.45;
+    color: var(--on-ink);
+    background-color: var(--ink);
+    border-radius: var(--r-pill);
+}
+#ppToast:empty { display: none; }
+.notification-error { color: var(--on-red); background-color: var(--red); }
+
+.notification-success span::before,
+.notification-error span::before {
+    content: "";
+    display: inline-block; vertical-align: middle;
+    width: 7px; height: 7px; margin-right: 11px;
+    background-color: var(--dot-ok);
+    border-radius: var(--r-pill);
+}
+.notification-error span::before { background-color: var(--dot-err); }
+
+.notification-close {
+    position: relative;
+    padding: 6px var(--s-3);
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 9px; font-weight: 500; line-height: 1.3;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: inherit;
+    background-color: rgba(247, 243, 233, 0.16);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+}
+
+/* Cibles tactiles ≥ 44 × 44px (§ 8.3).
+   Divergence assumée : le bloc du § 8.3 pose `position: relative` sur
+   .remove-album-btn, ce qui écrase le `position: absolute` que lui impose le
+   § 5.11.7 et renvoie le bouton en haut à gauche, sur la pastille de numéro.
+   Le bouton est déjà positionné : il établit donc déjà le bloc conteneur dont
+   son ::after a besoin. Seul .notification-close reçoit la relative. */
+.notification-close { position: relative; }
+.notification-close::after, .remove-album-btn::after {
+    content: ""; position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 44px; height: 44px;
+}
+
+/* --- 5.18 Édition de la bio --------------------------------------------- */
+.bio-head { display: flex; align-items: center; gap: var(--s-4); margin-top: var(--s-6); }
+.bio-head h2 { font-size: 19px; font-weight: 600; line-height: 1.3; letter-spacing: -0.03em; }
+#bioEditForm { margin-top: var(--s-4); max-width: 56ch; }
+.form-actions {
+    display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--s-3);
+    margin-top: var(--s-4);
+}
+
+/* --- 5.19 Message de statut --------------------------------------------- */
+.feedback {
+    display: block;
+    min-height: 20px;
+    margin-top: var(--s-2);
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; line-height: 1.4;
+    letter-spacing: 0.10em;
+    color: var(--ink-3);
+}
+.feedback.is-ok    { color: var(--ok); }
+.feedback.is-error { color: var(--red); }
+
+/* --- 5.20 Pages d'état -------------------------------------------------- */
+main.error {
+    max-width: 520px;
+    margin-inline: auto;
+    padding-block: var(--s-15);
+    text-align: center;
+}
+main.error h1 {
+    font-size: clamp(26px, 3.6vw, 42px);
+    font-weight: 700; line-height: 1; letter-spacing: -0.05em;
+}
+main.error p { margin-top: var(--s-4); font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+main.error .btn { margin-top: var(--s-7); }
+
+/* --- 5.21 Page de connexion --------------------------------------------- */
+main.login {
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    min-height: 100vh;
+    padding-inline: var(--s-4);
+    text-align: center;
+}
+.login-in { width: 400px; max-width: 100%; }
+main.login .site-logo { display: block; font-size: 30px; line-height: 1.05; letter-spacing: -0.05em; }
+main.login p { margin-top: var(--s-3); font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+.btn-google { justify-content: center; width: 100%; margin-top: var(--s-9); }
+main.login .login-terms { margin-top: var(--s-6); }
+
+
+/* ===========================================================================
+   5. ÉCRANS
+   Seules les règles qui ne relèvent d'aucun composant.
+   =========================================================================== */
+
+/* Accueil : le filigrane du bandeau. Pochettes de substitution du § 11.5,
+   reprises telles quelles de la maquette de référence. Elles NE DOIVENT PAS
+   être employées ailleurs que dans ce filigrane. */
+.cv1{background:radial-gradient(circle at 50% 46%,#0038FF 0 27%,transparent 27%),#DCD2BB}
+.cv2{background:linear-gradient(180deg,#4E6FA8 0 58%,#1B2438 58%)}
+.cv3{background:radial-gradient(circle at 28% 72%,#D89B3C 0 38%,transparent 38%),#2A2114}
+.cv4{background:linear-gradient(118deg,#E8DCC4 0 54%,#5B2F52 54%)}
+.cv5{background:conic-gradient(from 210deg,#20302A 0 38%,#7FB496 38% 58%,#E4DBC7 58%)}
+.cv6{background:radial-gradient(circle at 71% 25%,#F7F3E9 0 16%,transparent 16%),#6B5B43}
+.cv7{background:linear-gradient(90deg,#16233A 0 33%,#4E7FBF 33% 66%,#16233A 66%)}
+.cv8{background:radial-gradient(circle at 50% 100%,#C24A2C 0 60%,transparent 60%),#241611}
+.cv9{background:linear-gradient(45deg,#DED4BD 0 50%,#2C2C36 50%)}
+.cv10{background:radial-gradient(circle at 50% 50%,#EDE6D6 0 21%,#0038FF 21% 43%,#EDE6D6 43%)}
+.cv11{background:linear-gradient(180deg,#8A6A3C 0 42%,#1B1508 42%)}
+.cv12{background:radial-gradient(circle at 16% 16%,#94B15F 0 32%,transparent 32%),#20240F}
+.cv13{background:radial-gradient(circle at 78% 60%,#0038FF 0 20%,transparent 20%),#C9BEA4}
+.cv14{background:linear-gradient(270deg,#6B4270 0 45%,#E4DBC7 45%)}
+.cv15{background:conic-gradient(from 20deg,#2B2B33 0 25%,#B9AC8E 25% 50%,#2B2B33 50% 75%,#DED4BD 75%)}
+.cv16{background:radial-gradient(circle at 40% 30%,#D6482E 0 24%,transparent 24%),#2A1712}
+
+/* Accueil : section des trois étapes. */
+.steps-section { padding-block: var(--s-13); border-bottom: 1px solid var(--line); }
+
+/* Tableau de bord : bande en creux, autour du seul bloc de visibilité. */
+.panelbox {
+    margin-block: var(--s-8);
+    padding-block: var(--s-12);
+    background-color: var(--bg-2);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+/* Catégories : le mur ou l'état vide, sur le fond de page. */
+.category { padding-bottom: var(--s-2); }
+
+
+/* ===========================================================================
+   6. REQUÊTES MÉDIA (§ 7)
+   Groupées ici, par palier décroissant. Aucune règle média ailleurs.
+   =========================================================================== */
+
+/* --- 7.1  lg — ordinateur portable -------------------------------------- */
+@media (max-width: 1200px) {
+    .album-list { grid-template-columns: repeat(6, 1fr); }
+    .hero-wall  { grid-template-columns: repeat(8, 1fr); }
+}
+
+/* --- 7.2  md — tablette -------------------------------------------------- */
+@media (max-width: 860px) {
+    .album-list { grid-template-columns: repeat(4, 1fr); }
+    .steps      { grid-template-columns: 1fr; }
+    .counters   { grid-template-columns: repeat(2, 1fr); }
+
+    .slab-cell { border-right: 0; border-bottom: 1px solid var(--line); }
+    .slab-row > .slab-cell:last-child { border-bottom: 0; }
+    .counters .slab-cell:nth-child(odd) { border-right: 1px solid var(--line); }
+
+    .hero-in { padding-block: var(--s-14) var(--s-13); }
+    .profile { gap: var(--s-5); }
+
+    .modal, .add-album-modal { width: calc(100vw - 32px); }
+}
+
+/* --- 7.3  sm — téléphone -------------------------------------------------- */
+@media (max-width: 560px) {
+    .wrap { padding-inline: var(--s-4); }
+
+    .album-list { grid-template-columns: repeat(3, 1fr); }
+    .counters   { grid-template-columns: 1fr; }
+    .counters .slab-cell:nth-child(odd) { border-right: 0; }
+
+    .hero-in { padding-block: var(--s-13) var(--s-11); }
+
+    .profile-avatar { width: 72px; height: 72px; }
+    .stats-row { gap: var(--s-5); }
+
+    .site-footer { flex-direction: column; align-items: flex-start; }
+
+    .notification, #ppToast { width: calc(100vw - 32px); }
+
+    .cat-head-aside { flex-direction: column; align-items: stretch; width: 100%; }
+    .cat-head-aside .btn { justify-content: center; }
+}
+
+/* --- 7.4  Le mur au tactile ---------------------------------------------- */
+/* La requête porte sur la capacité de survol, pas sur la largeur. */
+@media (hover: none) {
+    .album-meta { transform: translateY(0); }
+    .album-idx  { opacity: 1; }
+    .album-card-horizontal .remove-album-btn { opacity: 1; }
+}
+
+/* --- 3.7 / 8.6  Mouvement réduit ------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        transition-duration: 1ms !important;
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+    }
+    .album:hover .cover { transform: none; }
+    .album:hover img, .album-card-horizontal:hover img { transform: none; }
+}

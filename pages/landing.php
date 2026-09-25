@@ -2,6 +2,7 @@
     require __DIR__ . '/../vendor/autoload.php';
     require_once __DIR__ . '/../env_data.php';
     require_once __DIR__ . '/../util/functions.php';
+    require_once __DIR__ . '/../util/i18n.php';
 
     $client = new Google\Client;
     $client->setClientId($clientID);
@@ -13,8 +14,7 @@
     $url = $client->createAuthUrl();
 
     $isLoggedIn = isset($_COOKIE['session_token']) && $_COOKIE['session_token'] !== '';
-    $buttonUrl = $isLoggedIn ? '/pages/dashboard.php' : $url;
-    $buttonText = $isLoggedIn ? 'Accéder à votre profil' : 'Se connecter avec Google';
+    $buttonUrl  = $isLoggedIn ? '/pages/dashboard.php' : $url;
 ?><!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -53,83 +53,86 @@
         "keywords": "profil musical, montrer mes musiques, partager ses musiques, collection musicale, albums préférés, univers musical"
     }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/universon.css">
 </head>
 <body>
 
-    <header class="site-header">
-        <a href="/" class="site-logo">Universon</a>
-        <a href="<?= htmlspecialchars($buttonUrl) ?>" class="login-link"><?= htmlspecialchars($buttonText) ?></a>
-    </header>
+    <div class="wrap">
+        <header class="site-header">
+            <a href="/" class="site-logo"><?= e('brand.wordmark') ?><b><?= e('brand.dot') ?></b></a>
+            <nav>
+                <a href="/@godwin" class="link-m"><?= e('nav.explore') ?></a>
+                <a href="<?= htmlspecialchars($buttonUrl) ?>" class="btn btn-line"><?= e('nav.login') ?></a>
+            </nav>
+        </header>
+    </div>
 
     <main>
 
         <section class="hero" aria-labelledby="hero-title">
-            <h1 id="hero-title">Universon</h1>
-            <p class="hero-tagline">Exposez vos albums comme des œuvres d'art</p>
-            <p class="hero-description">Composez votre collection musicale, montrez vos musiques et partagez vos albums préférés en un seul lien.</p>
-            <a href="<?= htmlspecialchars($buttonUrl) ?>" class="hero-cta">Créer mon profil musical</a>
+            <div class="hero-wall" aria-hidden="true">
+                <?php for ($i = 0; $i < 36; $i++): ?><span class="cv<?= ($i % 16) + 1 ?>"></span><?php endfor; ?>
+            </div>
+            <div class="hero-in wrap">
+                <span class="mo"><?= e('hero.eyebrow') ?></span>
+                <h1 id="hero-title"><?= e('hero.title') ?></h1>
+                <p><?= e('hero.lede') ?></p>
+                <div class="cta-row">
+                    <a href="<?= htmlspecialchars($buttonUrl) ?>" class="btn"><?= e('hero.cta.primary') ?></a>
+                    <a href="/@godwin" class="link-m"><?= e('hero.cta.secondary') ?></a>
+                </div>
+            </div>
         </section>
 
-        <section class="intro" aria-labelledby="intro-title">
-            <h2 id="intro-title">Manifeste</h2>
-            <blockquote>
-                <p>Chaque album est une œuvre d'art. Chaque collection raconte une histoire unique.</p>
-            </blockquote>
-            <p>Universon est l'endroit où votre passion musicale prend vie. Organisez et partagez vos albums préférés dans une collection personnelle qui vous ressemble.</p>
-        </section>
+        <div class="wrap">
 
-        <section class="features" aria-labelledby="features-title">
-            <h2 id="features-title">Fonctionnalités</h2>
-            <ul>
-                <li>
-                    <h3>Collection personnelle</h3>
-                    <p>Présentez vos albums dans une collection qui vous appartient.</p>
-                </li>
-                <li>
-                    <h3>Recherche d'albums</h3>
-                    <p>Accédez à des millions d'albums et enrichissez votre collection musicale.</p>
-                </li>
-                <li>
-                    <h3>Profil public</h3>
-                    <p>Obtenez votre URL personnalisée (@username) et partagez votre univers musical avec qui vous voulez, quand vous voulez.</p>
-                </li>
-                <li>
-                    <h3>Personnalisation</h3>
-                    <p>Organisez votre collection par coups de cœur, albums les plus écoutés, et ajoutez vos notes personnelles.</p>
-                </li>
-            </ul>
-        </section>
+            <div class="slab slab-row counters">
+                <div class="slab-cell">
+                    <b><?= e('counters.shelves.value') ?></b>
+                    <span class="mo"><?= e('counters.shelves.label') ?></span>
+                </div>
+                <div class="slab-cell">
+                    <b><?= e('counters.albums.value') ?></b>
+                    <span class="mo"><?= e('counters.albums.label') ?></span>
+                </div>
+                <div class="slab-cell">
+                    <b><?= e('counters.link.value') ?></b>
+                    <span class="mo"><?= e('counters.link.label') ?></span>
+                </div>
+                <div class="slab-cell">
+                    <b><?= e('counters.algo.value') ?></b>
+                    <span class="mo"><?= e('counters.algo.label') ?></span>
+                </div>
+            </div>
 
-        <section class="steps" aria-labelledby="steps-title">
-            <h2 id="steps-title">Trois étapes</h2>
-            <ol>
-                <li>
-                    <h3>Connectez-vous</h3>
-                    <p>Créez votre compte en quelques secondes avec Google. Simple, rapide, sécurisé.</p>
-                </li>
-                <li>
-                    <h3>Ajoutez vos albums</h3>
-                    <p>Recherchez vos albums favoris et construisez votre collection unique.</p>
-                </li>
-                <li>
-                    <h3>Partagez votre univers</h3>
-                    <p>Votre profil public est prêt. Inspirez d'autres passionnés de musique avec vos découvertes.</p>
-                </li>
-            </ol>
-        </section>
+            <section class="steps-section" aria-labelledby="steps-title">
+                <div class="section-head">
+                    <h2 id="steps-title"><?= e('steps.title') ?></h2>
+                    <span class="mo"><?= e('steps.aside') ?></span>
+                </div>
+                <div class="slab slab-row steps">
+                    <?php for ($n = 1; $n <= 3; $n++): ?>
+                    <div class="slab-cell">
+                        <span class="mo"><?= e("steps.$n.index") ?></span>
+                        <h3><?= e("steps.$n.title") ?></h3>
+                        <p><?= e("steps.$n.body") ?></p>
+                    </div>
+                    <?php endfor; ?>
+                </div>
+            </section>
 
-        <section class="final-cta" aria-labelledby="final-cta-title">
-            <h2 id="final-cta-title">Créez votre profil musical</h2>
-            <a href="<?= htmlspecialchars($buttonUrl) ?>"><?= htmlspecialchars($buttonText) ?></a>
-        </section>
+            <footer class="site-footer">
+                <p class="big"><?= e('footer.big') ?><b><?= e('brand.dot') ?></b></p>
+                <p class="mo"><?= e('footer.rights', ['year' => date('Y')]) ?></p>
+            </footer>
+
+        </div>
 
     </main>
-
-    <footer class="site-footer">
-        <p>© <?= date('Y') ?> Universon</p>
-        <p>Votre univers musical à partager</p>
-    </footer>
 
 </body>
 </html>
