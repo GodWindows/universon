@@ -71,12 +71,17 @@ return [
     'profile.bio.cancel'        => 'Annuler',
 
     /* --- Catégories ---------------------------------------------------- */
-    'category.favorite'         => 'Coups de cœur',
+    /* 'category.favorites'         => 'Coups de cœur',
     'category.most_played'      => 'Les plus écoutés',
     'category.guilty_pleasure'  => 'Plaisirs coupables',
+    'category.firstloves'  => 'Mes tout premiers amours', */
+    'category.favorites'         => '[categorie.coupDeCoeur]',
+    'category.most_played'      => '[categorie.lesPlusÉcoutés]',
+    'category.guilty_pleasure'  => '[categorie.plaisirsExotiques]',
+    'category.firstloves'  => '[categorie.premierAmours]',
     'category.meta'             => '{count} albums · rayon {n}',
     'category.fallback'         => 'Albums publics',
-    'category.empty'            => 'Ce rayon est vide, assume, ajoute quelque chose',
+    'category.empty'            => 'Ce rayon est vide, quelqu’un a du mal à assumer...',
     'category.add'              => 'Ajouter un album',
 
     /* --- Tableau de bord ----------------------------------------------- */
