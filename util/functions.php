@@ -262,6 +262,47 @@
         return null;
     }
 
+    /* Pochettes des profils publics, pour le mur du bandeau d'accueil (§ 6.1).
+       Tirées au hasard ; si les profils publics en comptent moins que $count,
+       la liste est répétée pour remplir le mur. */
+    function get_public_wall_covers($count)
+    {
+        $conn = connect_database();
+        if (!$conn) {
+            return [];
+        }
+        try {
+            $stmt = $conn->prepare("
+                SELECT DISTINCT a.id, a.name, a.artist_name, a.image_url_100
+                FROM albums a
+                INNER JOIN user_album_categories uac ON a.id = uac.album_id
+                INNER JOIN users u ON uac.user_id = u.id
+                WHERE u.profile_visibility = 'public' AND a.image_url_100 IS NOT NULL AND a.image_url_100 <> ''
+                ORDER BY RAND()
+                LIMIT " . (int) $count);
+            $stmt->execute();
+            $covers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            if (env_type() == "dev") {
+                error_log("Error fetching wall covers: " . $e->getMessage());
+            }
+            return [];
+        }
+        if (!$covers) {
+            return [];
+        }
+        // Les vignettes iTunes existent en plusieurs tailles : 300px reste net en 2x.
+        foreach ($covers as &$cover) {
+            $cover['image_url'] = str_replace('/100x100bb.', '/300x300bb.', $cover['image_url_100']);
+        }
+        unset($cover);
+        $wall = [];
+        for ($i = 0; count($wall) < $count; $i++) {
+            $wall[] = $covers[$i % count($covers)];
+        }
+        return $wall;
+    }
+
     // Fonctions pour gérer les catégories d'albums
     function get_user_albums_by_category($userId, $categoryName)
     {

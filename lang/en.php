@@ -42,6 +42,8 @@ return [
     'hero.lede'                 => "Add the records you listen to, sort them onto four shelves, drop your @ in your bio. That's it.",
     'hero.cta.primary'          => 'Build my wall',
     'hero.cta.secondary'        => 'See @godwin →',
+    'hero.img_alt'              => 'A phone showing @godwin\'s Universon profile on a street at sunset',
+    'hero.img2_alt'             => 'Top-down view: a phone showing @Max\'s profile among vinyl records and headphones',
 
     /* --- Counters ------------------------------------------------------ */
     'counters.shelves.value'    => '4',
@@ -65,6 +67,21 @@ return [
     'steps.3.index'             => '03',
     'steps.3.title'             => 'Share your @',
     'steps.3.body'              => 'universon.fr/@you. Visible without an account, readable anywhere.',
+    'steps.1.img_alt'           => 'A laptop showing a Universon profile next to a turntable',
+    'steps.2.img_alt'           => 'Someone typing \'blonde\' to add an album, with covers showing up',
+    'steps.3.img_alt'           => 'Two friends looking at a Universon profile on a phone',
+
+    /* --- Vitrine et détails -------------------------------- */
+    'showcase.aside'            => 'Public profiles',
+    'showcase.title'            => "Real walls,\nreal people.",
+    'showcase.body'             => 'Every profile is a public page, readable without an account. Go see what they\'re listening to.',
+    'showcase.alt'              => '@{pseudo}\'s Universon profile on a phone',
+    'details.title'             => "Sorted like\na record crate.",
+    'details.wall_alt'          => 'A row of eight covers edge to edge on a Universon profile',
+    'details.wall_caption'      => 'Your covers, edge to edge. Nothing else.',
+    'details.toggle.title'      => 'Public when you want.',
+    'details.toggle.body'       => 'One switch: your wall opens at universon.fr/@you, or stays just for you.',
+    'details.toggle_alt'        => '\'Public profile\' switch, turned on',
 
     /* --- Profile ------------------------------------------------------- */
     'profile.share'             => 'Copy link',

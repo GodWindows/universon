@@ -45,6 +45,8 @@ return [
     'hero.lede'                 => 'Sɔ́ albúm e a nɔ ɖótó lɛ dó, klán yě ɖò tɛ́n ɛnɛ mɛ, bo sɔ́ @ towe dó bio towe mɛ. Enɛ́ wɛ.',
     'hero.cta.primary'          => 'Bló adǒ ce',
     'hero.cta.secondary'        => 'Kpɔ́n @godwin →',
+    'hero.img_alt'              => 'Alokan ɖé ɖò profil Universon @godwin tɔn xlɛ́ wɛ ɖò alinu ɖé jí hwenu e hwe ɖò yiyi wɛ é',
+    'hero.img2_alt'             => 'Sín jǐ: alokan ɖé ɖò profil @Max tɔn xlɛ́ wɛ ɖò disque lɛ kpó kpɔ́ntɔ́n ɖé kpó tɛ́ntin',
 
     /* --- Compteurs ----------------------------------------------------- */
     'counters.shelves.value'    => '4',
@@ -68,6 +70,21 @@ return [
     'steps.3.index'             => '03',
     'steps.3.title'             => 'Má @ towe',
     'steps.3.body'              => 'universon.fr/@we. Mɛ bǐ sixu kpɔ́n, é ma byɔ́ compte ǎ.',
+    'steps.1.img_alt'           => 'Ɔdinatɛ́ɛ ɖé ɖò profil Universon ɖé xlɛ́ wɛ, ɖò platine ɖé kpá',
+    'steps.2.img_alt'           => 'Mɛ ɖé ɖò « blonde » wlán wɛ bo na sɔ́ albúm ɖé dó, fɔ́tó albúm lɛ tɔn ɖò wiwá wɛ',
+    'steps.3.img_alt'           => 'Xɔ́ntɔn wè ɖò profil Universon ɖé kpɔ́n wɛ ɖò alokan jí',
+
+    /* --- Vitrine et détails -------------------------------- */
+    'showcase.aside'            => 'Profil mɛ bǐ tɔn lɛ',
+    'showcase.title'            => "Adǒ nugbo lɛ,\nmɛ nugbo lɛ.",
+    'showcase.body'             => 'Profil ɖokpó ɖokpó bǐ nyí wěma mɛ bǐ tɔn, mɛ bǐ sixu kpɔ́n bo ma ɖó compte ǎ. Yì kpɔ́n hàn e yě nɔ ɖótó lɛ.',
+    'showcase.alt'              => 'Profil Universon @{pseudo} tɔn ɖò alokan jí',
+    'details.title'             => "Albúm towe lɛ,\nɖò tɛ́n yětɔn.",
+    'details.wall_alt'          => 'Fɔ́tó albúm ɛnɛtɔn ɖò kpɔ́ ɖò profil Universon ɖé jí',
+    'details.wall_caption'      => 'Fɔ́tó albúm towe lɛ, ɖokpó ɖò ɖevo kpá. Nǔ ɖevo ɖě ǎ.',
+    'details.toggle.title'      => 'Mɛ bǐ tɔn hwenu e a jló é.',
+    'details.toggle.body'       => 'Nǔ ɖokpó wɛ a na zin: adǒ towe na hùn ɖò universon.fr/@we, abǐ é na nɔ towe ɖokpónɔ.',
+    'details.toggle_alt'        => 'Nǔ e nɔ hùn profil ɔ dó mɛ bǐ é, é ko hùn',
 
     /* --- Profil -------------------------------------------------------- */
     'profile.share'             => 'Kɔ́pi lien ɔ',

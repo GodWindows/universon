@@ -49,6 +49,8 @@ return [
     'hero.lede'                 => "Ajoute les disques que tu écoutes, range-les en quatre rayons, balance ton @ en bio. C'est tout.",
     'hero.cta.primary'          => 'Créer mon mur',
     'hero.cta.secondary'        => 'Voir @godwin →',
+    'hero.img_alt'              => 'Un téléphone affiche le profil Universon de @godwin dans une rue au coucher du soleil',
+    'hero.img2_alt'             => 'Vue de dessus : un téléphone affiche le profil de @Max parmi des vinyles et un casque',
 
     /* --- Compteurs ----------------------------------------------------- */
     'counters.shelves.value'    => '4',
@@ -72,6 +74,21 @@ return [
     'steps.3.index'             => '03',
     'steps.3.title'             => 'Partage ton @',
     'steps.3.body'              => 'universon.fr/@toi. Visible sans compte, lisible partout.',
+    'steps.1.img_alt'           => 'Un ordinateur ouvert sur un profil Universon, à côté d\'une platine vinyle',
+    'steps.2.img_alt'           => 'Quelqu\'un tape « blonde » pour ajouter un album, les pochettes s\'affichent',
+    'steps.3.img_alt'           => 'Deux amis regardent un profil Universon sur un téléphone',
+
+    /* --- Vitrine et détails -------------------------------- */
+    'showcase.aside'            => 'Profils publics',
+    'showcase.title'            => "De vrais murs,\nde vraies personnes.",
+    'showcase.body'             => 'Chaque profil est une page publique, lisible sans compte. Va voir ce qu\'ils écoutent.',
+    'showcase.alt'              => 'Profil Universon de @{pseudo} sur téléphone',
+    'details.title'             => "Rangé comme\nun bac à disques.",
+    'details.wall_alt'          => 'Une rangée de huit pochettes bord à bord sur un profil Universon',
+    'details.wall_caption'      => 'Tes pochettes, bord à bord. Rien d\'autre.',
+    'details.toggle.title'      => 'Public quand tu veux.',
+    'details.toggle.body'       => 'Un interrupteur : ton mur s\'ouvre sur universon.fr/@toi, ou reste pour toi seul.',
+    'details.toggle_alt'        => 'Interrupteur « Profil public » activé',
 
     /* --- Profil -------------------------------------------------------- */
     'profile.share'             => 'Copier le lien',
