@@ -88,7 +88,7 @@ return [
 
     /* --- Profil -------------------------------------------------------- */
     'profile.share'             => 'Kɔ́pi lien ɔ',
-    'profile.enlarge'           => 'Kpɔ́n ɖò daxó mɛ',
+    'profile.enlarge'           => 'Kpɔ́n profil mɛ bǐ tɔn',
     'profile.stat.albums'       => 'Albúm',
     'profile.stat.shelves'      => 'Tɛ́n',
     'profile.stat.since'        => 'Sín',

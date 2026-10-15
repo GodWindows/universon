@@ -92,7 +92,7 @@ return [
 
     /* --- Profil -------------------------------------------------------- */
     'profile.share'             => 'Copier le lien',
-    'profile.enlarge'           => 'Voir en grand',
+    'profile.enlarge'           => 'Voir mon profil public',
     'profile.stat.albums'       => 'Albums',
     'profile.stat.shelves'      => 'Rayons',
     'profile.stat.since'        => 'Depuis',

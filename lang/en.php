@@ -85,7 +85,7 @@ return [
 
     /* --- Profile ------------------------------------------------------- */
     'profile.share'             => 'Copy link',
-    'profile.enlarge'           => 'See it big',
+    'profile.enlarge'           => 'View my public profile',
     'profile.stat.albums'       => 'Albums',
     'profile.stat.shelves'      => 'Shelves',
     'profile.stat.since'        => 'Since',
