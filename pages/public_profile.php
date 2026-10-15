@@ -116,6 +116,7 @@
 
     $hasLogout    = (bool) $viewer;
     $totalAlbums  = array_sum(array_map('count', $categoriesAlbums));
+    $reviews      = get_user_reviews($publicUser['id']);
 
     $profileName = htmlspecialchars($publicUser['firstName'] . (!empty($publicUser['lastName']) ? ' ' . $publicUser['lastName'] : ''));
     $shareUrl = htmlspecialchars($site_url) . '/@' . htmlspecialchars($publicUser['pseudo']);
@@ -235,6 +236,11 @@
             </div>
         </section>
 
+        <?= profile_tabs($totalAlbums, count($reviews)) ?>
+
+        <section id="lists" class="profile-panel" role="tabpanel" aria-labelledby="tab-lists" tabindex="0">
+        <h2 class="sr-only"><?= e('section.lists') ?></h2>
+
         <?php if (!empty($categories)): ?>
             <?php $catIndex = 0; foreach ($categories as $category):
                 $catIndex++;
@@ -243,7 +249,7 @@
             ?>
             <section class="category" aria-labelledby="<?= htmlspecialchars($headId) ?>">
                 <div class="cat-head">
-                    <h2 id="<?= htmlspecialchars($headId) ?>"><?= e('category.' . $category['name']) ?></h2>
+                    <h3 id="<?= htmlspecialchars($headId) ?>"><?= e('category.' . $category['name']) ?></h3>
                     <div class="cat-head-aside">
                         <span class="mo cat-meta"><?= e('category.meta', [
                             'count' => count($albums),
@@ -263,6 +269,16 @@
         <?php else: ?>
             <p class="no-albums"><?= e('category.empty') ?></p>
         <?php endif; ?>
+        </section>
+
+        <section id="reviews" class="profile-panel profile-panel--read" role="tabpanel" aria-labelledby="tab-reviews" tabindex="0">
+            <h2 class="sr-only"><?= e('section.reviews') ?></h2>
+            <?php if (!empty($reviews)): ?>
+                <?= review_list($reviews, false) ?>
+            <?php else: ?>
+                <p class="no-albums"><?= e('review.empty.public') ?></p>
+            <?php endif; ?>
+        </section>
 
         <footer class="site-footer">
             <p class="big"><?= e('footer.big') ?><b><?= e('brand.dot') ?></b></p>
@@ -311,5 +327,6 @@
         });
     })();
 </script>
+<script src="/js/tabs.js"></script>
 </body>
 </html>

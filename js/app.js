@@ -256,7 +256,8 @@ function initProfileVisibility() {
 
     // Close modal on escape key
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && pseudoModal.style.display !== 'none') {
+        // Seulement si la modale est ouverte : son display initial est '' (masquée par base.css).
+        if (e.key === 'Escape' && pseudoModal.style.display === 'block') {
             hidePseudoModal();
             // Revert visibility toggle
             visibilityToggle.checked = false;
@@ -436,7 +437,49 @@ function hideSuggestions(suggestionsElement = null) {
     if (targetElement) {
         targetElement.style.display = 'none';
         targetElement.innerHTML = '';
+        const input = targetElement.id && document.querySelector('[aria-controls="' + targetElement.id + '"]');
+        if (input) {
+            input.setAttribute('aria-expanded', 'false');
+            input.removeAttribute('aria-activedescendant');
+        }
     }
+}
+
+/* Recherche au clavier, modèle combobox (components.md § 5.15) :
+   ↓ ↑ parcourent, Entrée choisit, Échap ferme la liste seulement. */
+function attachSuggestionKeys(input, list) {
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-controls', list.id);
+    input.setAttribute('aria-expanded', 'false');
+    list.setAttribute('role', 'listbox');
+
+    input.addEventListener('keydown', function (e) {
+        const rows = Array.from(list.querySelectorAll('.album-suggestion-item'));
+        if (list.style.display === 'none' || rows.length === 0) return;
+        const current = rows.findIndex(row => row.classList.contains('is-active'));
+
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const next = e.key === 'ArrowDown'
+                ? (current + 1) % rows.length
+                : (current <= 0 ? rows.length - 1 : current - 1);
+            rows.forEach((row, i) => {
+                row.classList.toggle('is-active', i === next);
+                row.setAttribute('aria-selected', String(i === next));
+            });
+            input.setAttribute('aria-activedescendant', rows[next].id);
+            rows[next].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter' && current >= 0) {
+            e.preventDefault();
+            rows[current].click();
+        } else if (e.key === 'Escape') {
+            // Ferme la liste sans fermer la modale ni la fiche autour.
+            e.preventDefault();
+            e.stopPropagation();
+            hideSuggestions(list);
+        }
+    });
 }
 
 // Global shared search functions
@@ -505,9 +548,12 @@ function renderSuggestions(items, suggestionsElement = null, inputElement = null
         }
         return;
     }
-    items.forEach(item => {
+    items.forEach((item, index) => {
         const row = document.createElement('div');
         row.className = 'album-suggestion-item';
+        row.id = targetElement.id + '-option-' + index;
+        row.setAttribute('role', 'option');
+        row.setAttribute('aria-selected', 'false');
         const coverHtml = item.cover ? '<img src="' + item.cover + '" alt="">' : '';
         row.innerHTML = `
             ${coverHtml}
@@ -527,6 +573,7 @@ function renderSuggestions(items, suggestionsElement = null, inputElement = null
             targetInput.dataset.artistName = item.artist || '';
             targetInput.dataset.artwork60 = (item.cover || '').replace('100x100bb.jpg', '60x60bb.jpg');
             targetInput.dataset.artwork100 = item.cover || '';
+            targetInput.dispatchEvent(new CustomEvent('album-select'));
 
             // Hide suggestions after selection
             if (suggestionsElement) {
@@ -538,6 +585,8 @@ function renderSuggestions(items, suggestionsElement = null, inputElement = null
         targetElement.appendChild(row);
     });
     targetElement.style.display = 'block';
+    targetInput.setAttribute('aria-expanded', 'true');
+    targetInput.removeAttribute('aria-activedescendant');
 }
 
 function escapeHtml(text) {
@@ -593,12 +642,39 @@ function initAlbumsManagement() {
     initDynamicCategoryButtons();
 }
 
+// Délégation : les boutons survivent au remplacement des panneaux (refreshProfile).
 function initDynamicCategoryButtons() {
-    document.querySelectorAll('button[data-category]').forEach(button => {
-        button.addEventListener('click', function () {
-            createDynamicModal(button.dataset.category);
-        });
+    document.addEventListener('click', function (e) {
+        const button = e.target.closest('button[data-category]');
+        if (button) createDynamicModal(button.dataset.category);
     });
+}
+
+/* Mise à jour sur place après une action (ux-rules.md U15) : la page est
+   redemandée au serveur, seules les zones du profil sont remplacées. Défilement,
+   onglet, notification et focus sont conservés. Repli : rechargement complet. */
+function refreshProfile(focusSelector) {
+    return fetch(window.location.pathname + window.location.search, { credentials: 'same-origin' })
+        .then(response => {
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            return response.text();
+        })
+        .then(html => {
+            const next = new DOMParser().parseFromString(html, 'text/html');
+            ['#lists', '#reviews', '.stats-row'].forEach(selector => {
+                const current = document.querySelector(selector);
+                const fresh = next.querySelector(selector);
+                if (current && fresh) current.innerHTML = fresh.innerHTML;
+            });
+            // Les onglets gardent leur état : seuls les compteurs changent.
+            document.querySelectorAll('.profile-tab').forEach(tab => {
+                const fresh = next.getElementById(tab.id);
+                if (fresh) tab.querySelector('.tab-count').textContent = fresh.querySelector('.tab-count').textContent;
+            });
+            const target = focusSelector && document.querySelector(focusSelector);
+            if (target) target.focus();
+        })
+        .catch(() => window.location.reload());
 }
 
 function createDynamicModal(categoryName) {
@@ -657,6 +733,7 @@ function createDynamicModal(categoryName) {
     const form = document.getElementById(`${categoryName}Form`);
 
     if (input && suggestions && form) {
+        attachSuggestionKeys(input, suggestions);
         input.addEventListener('input', debounce(function () {
             const query = input.value.trim();
             if (query.length < 2) {
@@ -752,11 +829,7 @@ function addAlbumToCategory(albumName, category, inputElement, suggestionsElemen
                 if (modal) modal.classList.remove('show');
 
                 showNotification(s('notify.added', { category: categoryDisplayName }), 'success');
-
-                // Reload page to show new album
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                refreshProfile('button[data-category="' + category + '"]');
             } else {
                 showNotification(data.error || s('notify.error'), 'error');
             }
@@ -793,10 +866,7 @@ function removeAlbumFromCategory(albumId, category) {
         .then(data => {
             if (data.success) {
                 showNotification(s('notify.removed', { category: categoryDisplayName }), 'success');
-                // Reload page to show updated categories
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                refreshProfile('button[data-category="' + category + '"]');
             } else {
                 showNotification(data.error || s('notify.error'), 'error');
             }

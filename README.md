@@ -11,6 +11,7 @@ Une plateforme web pour créer et partager votre univers musical personnel.
 - **Profils Publics/Privés** : Partagez votre collection musicale avec un pseudo unique (format `@username`)
 - **Recherche d'Albums** : Recherchez et ajoutez des albums à votre collection
 - **Partage de Profil** : Partagez facilement votre profil musical avec un lien direct
+- **Notes et avis** : Une section « Avis » distincte des listes : notez n'importe quel album (0,5 à 5 étoiles) et écrivez un avis, même s'il n'est dans aucune liste
 
 ## État de la présentation
 
@@ -47,6 +48,7 @@ universon/
 │   ├── get_categories.php            # Récupérer toutes les catégories
 │   ├── logout.php                    # Déconnexion
 │   ├── remove_album_from_category.php # Retirer un album d'une catégorie
+│   ├── save_review.php               # Enregistrer la note et l'avis d'un album
 │   ├── search_albums.php             # Rechercher des albums
 │   ├── update_bio.php                # Mise à jour de la bio
 │   ├── update_profile_visibility.php # Changer la visibilité du profil
@@ -54,7 +56,9 @@ universon/
 ├── css/                              # Styles CSS
 │   └── base.css                      # Règles fonctionnelles uniquement (pas d'habillage)
 ├── js/                               # JavaScript
-│   └── app.js                        # Logique frontend
+│   ├── app.js                        # Logique frontend
+│   ├── review.js                     # Fiche d'écriture d'un avis
+│   └── tabs.js                       # Onglets du profil : Listes / Avis
 ├── migrations/                       # Scripts de migration de base de données
 ├── pages/                            # Pages principales
 │   ├── dashboard.php                 # Tableau de bord utilisateur

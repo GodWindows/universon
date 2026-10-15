@@ -33,6 +33,7 @@
     }
 
     $totalAlbums = array_sum(array_map('count', $categoriesAlbums));
+    $reviews     = get_user_reviews($user['id']);
     $hasPseudo   = !empty($user['pseudo']);
     $shareUrl    = $hasPseudo ? $site_url . '/@' . $user['pseudo'] : '';
 ?><!DOCTYPE html>
@@ -166,6 +167,12 @@
 
         <div class="wrap">
 
+            <!-- Onglets Listes / Avis (reviews.md R3) — JS queries .profile-tabs -->
+            <?= profile_tabs($totalAlbums, count($reviews)) ?>
+
+            <section id="lists" class="profile-panel" role="tabpanel" aria-labelledby="tab-lists" tabindex="0">
+            <h2 class="sr-only"><?= e('section.lists') ?></h2>
+
             <!-- Albums par catégorie — JS queries button[data-category] -->
             <?php $catIndex = 0; foreach ($categories as $category):
                 $catIndex++;
@@ -175,7 +182,7 @@
             ?>
             <section class="category" aria-labelledby="<?= htmlspecialchars($headId) ?>">
                 <div class="cat-head">
-                    <h2 id="<?= htmlspecialchars($headId) ?>"><?= e('category.' . $category['name']) ?></h2>
+                    <h3 id="<?= htmlspecialchars($headId) ?>"><?= e('category.' . $category['name']) ?></h3>
                     <div class="cat-head-aside">
                         <span class="mo cat-meta"><?= e('category.meta', [
                             'count' => count($categoryAlbums),
@@ -214,6 +221,20 @@
                 <?php endif; ?>
             </section>
             <?php endforeach; ?>
+            </section>
+
+            <!-- Avis, indépendants des listes (reviews.md R3–R4) — JS queries #newReviewBtn, .review-edit -->
+            <section id="reviews" class="profile-panel" role="tabpanel" aria-labelledby="tab-reviews" tabindex="0">
+                <h2 class="sr-only"><?= e('section.reviews') ?></h2>
+                <div class="panel-bar">
+                    <button type="button" id="newReviewBtn" class="btn btn--sm" aria-haspopup="dialog"><?= e('review.new') ?></button>
+                </div>
+                <?php if (!empty($reviews)): ?>
+                    <?= review_list($reviews, true) ?>
+                <?php else: ?>
+                    <p class="no-albums"><?= e('review.empty.own') ?></p>
+                <?php endif; ?>
+            </section>
 
             <footer class="site-footer">
                 <p class="big"><?= e('footer.big') ?><b><?= e('brand.dot') ?></b></p>
@@ -241,11 +262,15 @@
         </div>
     </div>
 
+    <?= review_sheet() ?>
+
     <script>
         /* Chaînes lues par js/app.js ; les libellés de rayon (category.*) suivent
            le fichier de langue, qui fait foi à l'affichage (§ 9.3.4). */
-        window.UNIVERSON_I18N = <?= i18n_json(['category.', 'dashboard.', 'notify.', 'nav.', 'profile.bio.', 'pseudo.']) ?>;
+        window.UNIVERSON_I18N = <?= i18n_json(['category.', 'dashboard.', 'notify.', 'nav.', 'profile.bio.', 'pseudo.', 'review.']) ?>;
     </script>
     <script src="/js/app.js"></script>
+    <script src="/js/review.js"></script>
+    <script src="/js/tabs.js"></script>
 </body>
 </html>

@@ -104,10 +104,10 @@ return [
     /* --- Catégories ---------------------------------------------------- */
     'category.favorites'        => 'Nǔ e un yí wǎn ná hugan',
     'category.most_played'      => 'E un nɔ ɖótó hugan',
-    'category.guilty_pleasure'  => 'Nǔ e nɔ ɖí winnya',
+    'category.guilty_pleasure'  => 'Nǔ ɖevo e un yí wǎn',
     'category.firstloves'       => 'Wǎnyiyi nukɔntɔn ce lɛ',
     'category.meta'             => '{count} albúm · tɛ́n {n}',
-    'category.empty'            => 'Nǔ ɖé ɖò tɛ́n elɔ mɛ ǎ, mɛ ɖé ɖò winnya ɖí wɛ...',
+    'category.empty'            => 'Nǔ ɖé kún ɖò tɛ́n elɔ mɛ ǎ jǐ.',
     'category.add'              => 'Sɔ́ albúm dó',
 
     /* --- Tableau de bord ----------------------------------------------- */
@@ -154,6 +154,37 @@ return [
     'notify.offline'            => 'Connexion gblé',
     'notify.error'              => 'Nǔ gblé, vɔ́ tè kpɔ́n.',
     'notify.close'              => 'Sú',
+
+    /* --- Sections du profil et avis (reviews.md R8) -------------------- */
+    /* À faire relire par un locuteur natif (ux-rules.md U-dette 9). */
+    'tabs.label'                => 'Nǔ e ɖò profil ɔ mɛ',
+    'section.lists'             => 'Tɛ́n lɛ',
+    'section.reviews'           => 'Linlin lɛ',
+    'review.new'                => 'Wlán linlin ɖé',
+    'review.edit'               => 'Huzu',
+    'review.edit.aria'          => 'Huzu linlin {album} tɔn',
+    'review.eyebrow'            => 'Linlin towe',
+    'review.pick.label'         => 'Albúm',
+    'review.pick.placeholder'   => 'Nyǐkɔ́ albúm ɔ tɔn',
+    'review.rating.label'       => 'Sunvi e a na',
+    'review.rating.aria'        => 'Sunvi {value} ɖò 5 mɛ',
+    'review.rating.out_of'      => '{value}/5',
+    'review.rating.none'        => '—',
+    'review.rating.clear'       => 'Ɖè sunvi lɛ',
+    'review.decimal'            => ',',
+    'review.body.label'         => 'Linlin towe',
+    'review.body.count'         => '{count}/2000',
+    'review.save'               => 'Hɛn',
+    'review.saving'             => 'Ɖò hɛn wɛ...',
+    'review.cancel'             => 'Jó dó',
+    'review.delete'             => 'Ɖè linlin ɔ',
+    'review.delete.confirm'     => 'A jló na ɖè linlin elɔ à?',
+    'review.discard'            => 'A jló na jó nǔ e a huzu lɛ dó à?',
+    'review.empty.own'          => 'Linlin ɖé kún ɖè ǎ jǐ. Na sunvi albúm ɖěbǔ.',
+    'review.empty.public'       => 'Linlin ɖé kún ɖè ǎ jǐ.',
+    'notify.review_saved'       => 'Linlin ɔ hɛn!',
+    'notify.review_deleted'     => 'Linlin ɔ tɔ́n!',
+    'notify.review_error'       => 'Nǔ gblé, vɔ́ tè kpɔ́n.',
 
     /* --- États d'erreur -------------------------------------------------- */
     'error.notfound.title'      => 'Profil ɔ ɖè ǎ',

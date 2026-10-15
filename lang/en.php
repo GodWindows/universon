@@ -63,7 +63,7 @@ return [
     'steps.1.body'              => 'With Google. No password to remember, no form to fill.',
     'steps.2.index'             => '02',
     'steps.2.title'             => 'Fill the wall',
-    'steps.2.body'              => 'Type three letters, the cover shows up. Sort into favorites, most played, guilty pleasures, first loves.',
+    'steps.2.body'              => 'Type three letters, the cover shows up. Sort it into your four lists, from favorites to albums that aren’t your thing.',
     'steps.3.index'             => '03',
     'steps.3.title'             => 'Share your @',
     'steps.3.body'              => 'universon.fr/@you. Visible without an account, readable anywhere.',
@@ -101,10 +101,10 @@ return [
     /* --- Categories ---------------------------------------------------- */
     'category.favorites'        => 'Favorites',
     'category.most_played'      => 'Most played',
-    'category.guilty_pleasure'  => 'Guilty pleasures',
+    'category.guilty_pleasure'  => 'Not my thing, and yet',
     'category.firstloves'       => 'My very first loves',
     'category.meta'             => '{count} albums · shelf {n}',
-    'category.empty'            => "This shelf is empty, someone's struggling to own it...",
+    'category.empty'            => 'Nothing on this shelf yet.',
     'category.add'              => 'Add an album',
 
     /* --- Dashboard ----------------------------------------------------- */
@@ -123,7 +123,7 @@ return [
     'dashboard.add.empty'          => 'Type an album name.',
     'dashboard.add.too_long'       => 'That album name is too long.',
     'dashboard.remove'             => 'Remove',
-    'dashboard.remove.confirm'     => 'Remove this album from {category}?',
+    'dashboard.remove.confirm'     => 'Remove this album from “{category}”?',
 
     /* --- Username ------------------------------------------------------ */
     'pseudo.title'              => 'Pick your username',
@@ -142,8 +142,8 @@ return [
     'pseudo.saved'              => 'Username saved!',
 
     /* --- Notifications -------------------------------------------------- */
-    'notify.added'              => 'Album added to {category}',
-    'notify.removed'            => 'Album removed from {category}',
+    'notify.added'              => 'Album added to “{category}”',
+    'notify.removed'            => 'Album removed from “{category}”',
     'notify.bio_saved'          => 'Bio updated!',
     'notify.link_copied'        => 'Profile link copied!',
     'notify.link_prompt'        => 'Copy the link',
@@ -151,6 +151,36 @@ return [
     'notify.offline'            => 'Connection error',
     'notify.error'              => 'Something went wrong, try again.',
     'notify.close'              => 'Close',
+
+    /* --- Profile sections and reviews (reviews.md R8) ------------------ */
+    'tabs.label'                => 'Profile content',
+    'section.lists'             => 'Lists',
+    'section.reviews'           => 'Reviews',
+    'review.new'                => 'Write a review',
+    'review.edit'               => 'Edit',
+    'review.edit.aria'          => 'Edit the review of {album}',
+    'review.eyebrow'            => 'Your review',
+    'review.pick.label'         => 'Album',
+    'review.pick.placeholder'   => 'Album name',
+    'review.rating.label'       => 'Your rating',
+    'review.rating.aria'        => '{value} out of 5',
+    'review.rating.out_of'      => '{value}/5',
+    'review.rating.none'        => '—',
+    'review.rating.clear'       => 'Clear rating',
+    'review.decimal'            => '.',
+    'review.body.label'         => 'Your review',
+    'review.body.count'         => '{count}/2000',
+    'review.save'               => 'Save',
+    'review.saving'             => 'Saving…',
+    'review.cancel'             => 'Cancel',
+    'review.delete'             => 'Delete review',
+    'review.delete.confirm'     => 'Delete this review?',
+    'review.discard'            => 'Discard your changes?',
+    'review.empty.own'          => 'No reviews yet. Rate any album, whether it\'s in your lists or not.',
+    'review.empty.public'       => 'No reviews yet.',
+    'notify.review_saved'       => 'Review saved',
+    'notify.review_deleted'     => 'Review deleted',
+    'notify.review_error'       => 'Couldn\'t save the review',
 
     /* --- Error states ---------------------------------------------------- */
     'error.notfound.title'      => 'Profile not found',

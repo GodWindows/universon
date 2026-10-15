@@ -329,6 +329,223 @@
         return [];
     }
 
+    /* Avis de l'utilisateur, indépendants des listes (reviews.md R10),
+       du plus récemment modifié au plus ancien. */
+    function get_user_reviews($userId)
+    {
+        $conn = connect_database();
+        if (!$conn) {
+            return [];
+        }
+        try {
+            $stmt = $conn->prepare("
+                SELECT a.id, a.external_album_id, a.name, a.artist_name, a.image_url_60, a.image_url_100,
+                       ar.rating, ar.body AS review
+                FROM album_reviews ar
+                INNER JOIN albums a ON a.id = ar.album_id
+                WHERE ar.user_id = ?
+                ORDER BY ar.updated_at DESC
+            ");
+            $stmt->execute([$userId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            if (env_type() == "dev") {
+                error_log("Error fetching user reviews: " . $e->getMessage());
+            }
+            return [];
+        }
+    }
+
+    /* Note (1–10 demi-étoiles, ou null) et avis d'un album. Sans note ni
+       avis, la ligne est supprimée. Retourne l'id de l'album, ou false. */
+    function save_album_review($userId, $albumId, $albumData, $rating, $body)
+    {
+        $conn = connect_database();
+        if (!$conn) {
+            return false;
+        }
+        try {
+            if (!$albumId) {
+                $albumId = find_or_create_album($conn, $albumData);
+            }
+            if ($rating === null && $body === '') {
+                $stmt = $conn->prepare("DELETE FROM album_reviews WHERE user_id = ? AND album_id = ?");
+                $stmt->execute([$userId, $albumId]);
+                return $albumId;
+            }
+            $stmt = $conn->prepare("
+                INSERT INTO album_reviews (user_id, album_id, rating, body) VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE rating = VALUES(rating), body = VALUES(body)
+            ");
+            $stmt->execute([$userId, $albumId, $rating, $body === '' ? null : $body]);
+            return $albumId;
+        } catch (PDOException $e) {
+            if (env_type() == "dev") {
+                error_log("Error saving album review: " . $e->getMessage());
+            }
+            return false;
+        }
+    }
+
+    /* Note en étoiles (reviews.md R2) : seules les étoiles obtenues, demie comprise. */
+    function rating_stars($rating)
+    {
+        $rating = (int) $rating;
+        if ($rating < 1 || $rating > 10) {
+            return '';
+        }
+        $html = '<span class="stars" role="img" aria-label="'
+              . htmlspecialchars(t('review.rating.aria', ['value' => rating_value($rating)])) . '">';
+        $html .= str_repeat('<i class="star"></i>', intdiv($rating, 2));
+        if ($rating % 2) {
+            $html .= '<i class="star star--half"></i>';
+        }
+        return $html . '</span>';
+    }
+
+    /* 7 → « 3,5 » (décimale selon la langue). */
+    function rating_value($rating)
+    {
+        return str_replace('.', t('review.decimal'), (string) ($rating / 2));
+    }
+
+    /* Onglets « Listes » / « Avis » (reviews.md R3). Sans script, ce sont des
+       ancres vers les deux panneaux, tous deux visibles. */
+    function profile_tabs($listCount, $reviewCount)
+    {
+        $tabs = [
+            'lists'   => ['section.lists', $listCount, true],
+            'reviews' => ['section.reviews', $reviewCount, false],
+        ];
+        $html = '<nav class="profile-tabs" role="tablist" aria-label="' . htmlspecialchars(t('tabs.label')) . '">';
+        foreach ($tabs as $id => [$key, $count, $selected]) {
+            $html .= '<a href="#' . $id . '" class="profile-tab" role="tab" id="tab-' . $id . '"'
+                   . ' aria-controls="' . $id . '" aria-selected="' . ($selected ? 'true' : 'false') . '"'
+                   . ($selected ? '' : ' tabindex="-1"') . '>'
+                   . e($key) . '<span class="tab-count">' . (int) $count . '</span></a>';
+        }
+        return $html . '</nav>';
+    }
+
+    /* Liste d'avis (reviews.md R4). $editable ajoute le bouton « Modifier ». */
+    function review_list(array $reviews, $editable)
+    {
+        $html = '<ul class="review-list">';
+        foreach ($reviews as $review) {
+            $cover = !empty($review['image_url_100']) ? $review['image_url_100'] : ($review['image_url_60'] ?? '');
+            $html .= '<li class="review-item">';
+            $html .= '<div class="review-item-cover">'
+                   . ($cover ? '<img src="' . htmlspecialchars($cover) . '" alt="" loading="lazy" onerror="this.remove();">' : '')
+                   . '</div>';
+            $html .= '<div class="review-item-body">'
+                   . '<h3 class="review-item-title">' . htmlspecialchars($review['name']) . '</h3>';
+            if (!empty($review['artist_name'])) {
+                $html .= '<p class="mo review-item-artist">' . htmlspecialchars($review['artist_name']) . '</p>';
+            }
+            if (!empty($review['rating'])) {
+                $html .= '<p class="review-score">' . rating_stars($review['rating'])
+                       . '<span class="rating-value">' . e('review.rating.out_of', ['value' => rating_value($review['rating'])]) . '</span></p>';
+            }
+            if (!empty($review['review'])) {
+                $html .= '<p class="review-text">' . htmlspecialchars($review['review']) . '</p>';
+            }
+            $html .= '</div>';
+            if ($editable) {
+                $html .= '<button type="button" class="btn btn-line btn--sm review-edit"'
+                       . ' aria-label="' . htmlspecialchars(t('review.edit.aria', ['album' => $review['name']])) . '"'
+                       . ' data-album-id="' . (int) $review['id'] . '"'
+                       . ' data-external-id="' . htmlspecialchars((string) ($review['external_album_id'] ?? '')) . '"'
+                       . ' data-rating="' . htmlspecialchars((string) ($review['rating'] ?? '')) . '"'
+                       . ' data-review="' . htmlspecialchars((string) ($review['review'] ?? '')) . '"'
+                       . ' data-title="' . htmlspecialchars($review['name']) . '"'
+                       . ' data-artist="' . htmlspecialchars((string) ($review['artist_name'] ?? '')) . '"'
+                       . ' data-cover="' . htmlspecialchars((string) $cover) . '">'
+                       . e('review.edit') . '</button>';
+            }
+            $html .= '</li>';
+        }
+        return $html . '</ul>';
+    }
+
+    /* Fiche d'écriture du tableau de bord (reviews.md R5), en deux étapes. */
+    function review_sheet()
+    {
+        $html = '<dialog id="reviewSheet" class="review-sheet" data-step="pick" aria-labelledby="reviewTitle">'
+              . '<div class="review-head">'
+              . '<img class="review-cover" src="" alt="" width="96" height="96">'
+              . '<div>'
+              . '<span class="mo review-eyebrow">' . e('review.eyebrow') . '</span>'
+              . '<h2 id="reviewTitle"></h2>'
+              . '<p class="mo review-artist"></p>'
+              . '</div></div>'
+              . '<div class="review-main">'
+              . '<div class="album-input-group review-pick">'
+              . '<label for="reviewAlbumInput" class="field-label">' . e('review.pick.label') . '</label>'
+              . '<input type="text" id="reviewAlbumInput" class="album-input" placeholder="' . htmlspecialchars(t('review.pick.placeholder')) . '" maxlength="255" autocomplete="off">'
+              . '<div class="album-suggestions" id="reviewAlbumSuggestions" style="display:none;"></div>'
+              . '</div>'
+              . '<div class="review-write">'
+              . '<fieldset class="rating-input">'
+              . '<legend class="field-label">' . e('review.rating.label') . '</legend>'
+              . '<div class="rating-row">'
+              . '<div class="rating-stars" aria-hidden="true">' . str_repeat('<i class="star star--off"></i>', 5) . '</div>'
+              . '<span class="rating-value"></span>'
+              . '<button type="button" class="btn btn-line btn--sm rating-clear" hidden>' . e('review.rating.clear') . '</button>'
+              . '</div>';
+        for ($v = 1; $v <= 10; $v++) {
+            $html .= '<input type="radio" name="rating" value="' . $v . '" class="sr-only"'
+                   . ' aria-label="' . htmlspecialchars(t('review.rating.aria', ['value' => rating_value($v)])) . '">';
+        }
+        return $html . '</fieldset>'
+             . '<label for="reviewBody" class="field-label review-body-label">' . e('review.body.label') . '</label>'
+             . '<textarea id="reviewBody" class="field review-body" maxlength="2000" rows="6"></textarea>'
+             . '<p class="mo review-count"></p>'
+             . '</div></div>'
+             . '<div class="modal-foot">'
+             . '<button type="button" class="btn btn-line review-delete" hidden>' . e('review.delete') . '</button>'
+             . '<button type="button" class="btn btn-line review-cancel">' . e('review.cancel') . '</button>'
+             . '<button type="button" class="btn review-save" disabled>' . e('review.save') . '</button>'
+             . '</div></dialog>';
+    }
+
+    /* Album par identifiant externe, créé s'il n'existe pas. Retourne son id. */
+    function find_or_create_album($conn, $albumData)
+    {
+        $externalAlbumId = isset($albumData["external_album_id"]) ? $albumData["external_album_id"] : null;
+        $albumName = isset($albumData["album_name"]) ? $albumData["album_name"] : null;
+        $externalArtistId = isset($albumData["external_artist_id"]) ? $albumData["external_artist_id"] : null;
+        $artistName = isset($albumData["artist_name"]) ? $albumData["artist_name"] : null;
+        $image60 = isset($albumData["image_url_60"]) ? $albumData["image_url_60"] : null;
+        $image100 = isset($albumData["image_url_100"]) ? $albumData["image_url_100"] : null;
+        
+        $albumId = null;
+        
+        // Check if album exists in albums table by external_album_id
+        if (!empty($externalAlbumId)) {
+            $stmt = $conn->prepare("SELECT id FROM albums WHERE external_album_id = ? LIMIT 1");
+            $stmt->execute([$externalAlbumId]);
+            $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($existing && isset($existing["id"])) {
+                $albumId = $existing["id"];
+            }
+        }
+        
+        // If album doesn't exist, create it
+        if (!$albumId) {
+            if (!empty($externalAlbumId)) {
+                $stmt = $conn->prepare("INSERT INTO albums (external_album_id, external_artist_id, name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$externalAlbumId, $externalArtistId, $albumName, $artistName, $image60, $image100]);
+                $albumId = $conn->lastInsertId();
+            } else {
+                $stmt = $conn->prepare("INSERT INTO albums (name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$albumName, $artistName, $image60, $image100]);
+                $albumId = $conn->lastInsertId();
+            }
+        }
+        
+        return $albumId;
+    }
+
     function validate_category_exists($categoryName)
     {
         $conn = connect_database();
@@ -366,37 +583,7 @@
                     return false;
                 }
                 
-                $externalAlbumId = isset($albumData["external_album_id"]) ? $albumData["external_album_id"] : null;
-                $albumName = isset($albumData["album_name"]) ? $albumData["album_name"] : null;
-                $externalArtistId = isset($albumData["external_artist_id"]) ? $albumData["external_artist_id"] : null;
-                $artistName = isset($albumData["artist_name"]) ? $albumData["artist_name"] : null;
-                $image60 = isset($albumData["image_url_60"]) ? $albumData["image_url_60"] : null;
-                $image100 = isset($albumData["image_url_100"]) ? $albumData["image_url_100"] : null;
-                
-                $albumId = null;
-                
-                // Check if album exists in albums table by external_album_id
-                if (!empty($externalAlbumId)) {
-                    $stmt = $conn->prepare("SELECT id FROM albums WHERE external_album_id = ? LIMIT 1");
-                    $stmt->execute([$externalAlbumId]);
-                    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
-                    if ($existing && isset($existing["id"])) {
-                        $albumId = $existing["id"];
-                    }
-                }
-                
-                // If album doesn't exist, create it
-                if (!$albumId) {
-                    if (!empty($externalAlbumId)) {
-                        $stmt = $conn->prepare("INSERT INTO albums (external_album_id, external_artist_id, name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?, ?, ?)");
-                        $stmt->execute([$externalAlbumId, $externalArtistId, $albumName, $artistName, $image60, $image100]);
-                        $albumId = $conn->lastInsertId();
-                    } else {
-                        $stmt = $conn->prepare("INSERT INTO albums (name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?)");
-                        $stmt->execute([$albumName, $artistName, $image60, $image100]);
-                        $albumId = $conn->lastInsertId();
-                    }
-                }
+                $albumId = find_or_create_album($conn, $albumData);
                 
                 // Add album to category
                 $stmt = $conn->prepare("INSERT INTO user_album_categories (user_id, album_id, category_id) VALUES (?, ?, ?)");

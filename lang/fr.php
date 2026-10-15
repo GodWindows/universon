@@ -70,7 +70,7 @@ return [
     'steps.1.body'              => 'Avec Google. Pas de mot de passe à retenir, pas de formulaire.',
     'steps.2.index'             => '02',
     'steps.2.title'             => 'Remplis le mur',
-    'steps.2.body'              => 'Tape trois lettres, la pochette arrive. Range en coups de cœur, plus écoutés, plaisirs coupables, premiers amours.',
+    'steps.2.body'              => 'Tape trois lettres, la pochette arrive. Range-la dans tes quatre listes, des coups de cœur aux albums qui ne sont pas ton genre.',
     'steps.3.index'             => '03',
     'steps.3.title'             => 'Partage ton @',
     'steps.3.body'              => 'universon.fr/@toi. Visible sans compte, lisible partout.',
@@ -108,10 +108,10 @@ return [
     /* --- Catégories ---------------------------------------------------- */
     'category.favorites'         => 'Coups de cœur',
     'category.most_played'      => 'Les plus écoutés',
-    'category.guilty_pleasure'  => 'Plaisirs coupables',
+    'category.guilty_pleasure'  => 'Pas mon genre, et pourtant',
     'category.firstloves'  => 'Mes tout premiers amours',
     'category.meta'             => '{count} albums · rayon {n}',
-    'category.empty'            => 'Ce rayon est vide, quelqu’un a du mal à assumer...',
+    'category.empty'            => 'Rien dans ce rayon pour l’instant.',
     'category.add'              => 'Ajouter un album',
 
     /* --- Tableau de bord ----------------------------------------------- */
@@ -130,7 +130,7 @@ return [
     'dashboard.add.empty'          => "Tape le nom d'un album.",
     'dashboard.add.too_long'       => "Ce nom d'album est trop long.",
     'dashboard.remove'             => 'Retirer',
-    'dashboard.remove.confirm'     => 'Retirer cet album des {category} ?',
+    'dashboard.remove.confirm'     => 'Retirer cet album de « {category} » ?',
 
     /* --- Pseudo -------------------------------------------------------- */
     'pseudo.title'              => 'Choisis ton pseudo',
@@ -149,8 +149,8 @@ return [
     'pseudo.saved'              => 'Pseudo enregistré !',
 
     /* --- Notifications -------------------------------------------------- */
-    'notify.added'              => 'Album ajouté aux {category}',
-    'notify.removed'            => 'Album retiré des {category}',
+    'notify.added'              => 'Album ajouté à « {category} »',
+    'notify.removed'            => 'Album retiré de « {category} »',
     'notify.bio_saved'          => 'Bio mise à jour !',
     'notify.link_copied'        => 'Lien du profil copié !',
     'notify.link_prompt'        => 'Copie le lien',
@@ -158,6 +158,36 @@ return [
     'notify.offline'            => 'Erreur de connexion',
     'notify.error'              => 'Erreur, réessaie.',
     'notify.close'              => 'Fermer',
+
+    /* --- Sections du profil et avis (reviews.md R8) -------------------- */
+    'tabs.label'                => 'Contenu du profil',
+    'section.lists'             => 'Listes',
+    'section.reviews'           => 'Avis',
+    'review.new'                => 'Écrire un avis',
+    'review.edit'               => 'Modifier',
+    'review.edit.aria'          => 'Modifier l\'avis sur {album}',
+    'review.eyebrow'            => 'Ton avis',
+    'review.pick.label'         => 'Album',
+    'review.pick.placeholder'   => 'Nom de l\'album',
+    'review.rating.label'       => 'Ta note',
+    'review.rating.aria'        => '{value} sur 5',
+    'review.rating.out_of'      => '{value}/5',
+    'review.rating.none'        => '—',
+    'review.rating.clear'       => 'Effacer la note',
+    'review.decimal'            => ',',
+    'review.body.label'         => 'Ton avis',
+    'review.body.count'         => '{count}/2000',
+    'review.save'               => 'Sauvegarder',
+    'review.saving'             => 'Enregistrement…',
+    'review.cancel'             => 'Annuler',
+    'review.delete'             => 'Supprimer l\'avis',
+    'review.delete.confirm'     => 'Supprimer cet avis ?',
+    'review.discard'            => 'Abandonner les modifications ?',
+    'review.empty.own'          => 'Aucun avis. Note un album, qu\'il soit dans tes listes ou non.',
+    'review.empty.public'       => 'Aucun avis pour l\'instant.',
+    'notify.review_saved'       => 'Avis enregistré',
+    'notify.review_deleted'     => 'Avis supprimé',
+    'notify.review_error'       => 'Impossible d\'enregistrer l\'avis',
 
     /* --- États d'erreur -------------------------------------------------- */
     'error.notfound.title'      => 'Profil introuvable',
