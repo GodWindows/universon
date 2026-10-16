@@ -11,7 +11,7 @@
     $client->addScope("email");
     $client->addScope("profile");
 
-    $url = $client->createAuthUrl();
+    $url = google_auth_url($client);
 
     $isLoggedIn = isset($_COOKIE['session_token']) && $_COOKIE['session_token'] !== '';
     $buttonUrl  = $isLoggedIn ? '/pages/dashboard.php' : $url;

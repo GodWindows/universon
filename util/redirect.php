@@ -9,9 +9,21 @@ try {
     $client->setClientSecret($clientSecret);
     $client->setRedirectUri($redirect_uri);
 
-    if (! isset($_GET['code'])) {
+    // Le state renvoyé par Google doit être celui posé en cookie (google_auth_url)
+    $expectedState = $_COOKIE['oauth_state'] ?? '';
+    $state = $_GET['state'] ?? '';
+    if (!isset($_GET['code']) || !is_string($expectedState) || !is_string($state)
+        || $expectedState === '' || !hash_equals($expectedState, $state)) {
         echo "login failed";
+        exit;
     }
+    setcookie('oauth_state', '', [
+        'expires'  => time() - 3600,
+        'path'     => '/',
+        'secure'   => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
 
     $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
     $googleAccessToken = $token['access_token'];

@@ -149,6 +149,26 @@
         return false;
     }
 
+    /* URL de connexion Google avec un « state » aléatoire, gardé en cookie et
+       vérifié au retour dans util/redirect.php (protection contre le login CSRF).
+       Le state existant est réutilisé : deux onglets ouverts restent valides. */
+    function google_auth_url($client)
+    {
+        $state = $_COOKIE['oauth_state'] ?? '';
+        if (!is_string($state) || !preg_match('/^[a-f0-9]{32}$/', $state)) {
+            $state = bin2hex(random_bytes(16));
+            setcookie('oauth_state', $state, [
+                'expires'  => time() + 3600,
+                'path'     => '/',
+                'secure'   => true,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        }
+        $client->setState($state);
+        return $client->createAuthUrl();
+    }
+
     function saveSessionToDb($sessionToken, $googleAccessToken, $email) {
         $conn = connect_database();
         if ($conn) {

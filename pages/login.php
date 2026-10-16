@@ -11,7 +11,7 @@
     $client->addScope("email");
     $client->addScope("profile ");
 
-    $url = $client->createAuthUrl();
+    $url = google_auth_url($client);
 ?>
 
 <!DOCTYPE html>
