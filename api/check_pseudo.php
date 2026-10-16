@@ -1,8 +1,5 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type');
 
 require_once __DIR__ . '/../util/functions.php';
 require_once __DIR__ . '/../env_data.php';
@@ -11,6 +8,13 @@ require_once __DIR__ . '/../env_data.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
+
+// JSON only: a cross-site form cannot send this Content-Type (CSRF)
+if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') !== 0) {
+    http_response_code(415);
+    echo json_encode(['error' => 'Content-Type must be application/json']);
     exit;
 }
 
