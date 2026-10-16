@@ -367,6 +367,9 @@
         try {
             if (!$albumId) {
                 $albumId = find_or_create_album($conn, $albumData);
+                if (!$albumId) {
+                    return false;
+                }
             }
             if ($rating === null && $body === '') {
                 $stmt = $conn->prepare("DELETE FROM album_reviews WHERE user_id = ? AND album_id = ?");
@@ -508,42 +511,71 @@
              . '</div></dialog>';
     }
 
-    /* Album par identifiant externe, créé s'il n'existe pas. Retourne son id. */
+    /* Album par identifiant Deezer, créé s'il n'existe pas. Titre, artiste et
+       pochette viennent de l'API Deezer, jamais du navigateur. Sans identifiant
+       (saisie libre), l'album garde le nom tapé, sans pochette.
+       Retourne son id, ou null si l'album est introuvable. */
     function find_or_create_album($conn, $albumData)
     {
-        $externalAlbumId = isset($albumData["external_album_id"]) ? $albumData["external_album_id"] : null;
-        $albumName = isset($albumData["album_name"]) ? $albumData["album_name"] : null;
-        $externalArtistId = isset($albumData["external_artist_id"]) ? $albumData["external_artist_id"] : null;
-        $artistName = isset($albumData["artist_name"]) ? $albumData["artist_name"] : null;
-        $image60 = isset($albumData["image_url_60"]) ? $albumData["image_url_60"] : null;
-        $image100 = isset($albumData["image_url_100"]) ? $albumData["image_url_100"] : null;
-        
-        $albumId = null;
-        
-        // Check if album exists in albums table by external_album_id
-        if (!empty($externalAlbumId)) {
-            $stmt = $conn->prepare("SELECT id FROM albums WHERE external_album_id = ? LIMIT 1");
-            $stmt->execute([$externalAlbumId]);
-            $existing = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($existing && isset($existing["id"])) {
-                $albumId = $existing["id"];
+        $externalAlbumId = isset($albumData["external_album_id"]) && is_scalar($albumData["external_album_id"])
+            ? trim((string) $albumData["external_album_id"]) : '';
+
+        // Saisie libre : nom et artiste tapés, aucune image venant du navigateur
+        if ($externalAlbumId === '') {
+            $albumName = isset($albumData["album_name"]) && is_string($albumData["album_name"]) ? trim($albumData["album_name"]) : '';
+            $artistName = isset($albumData["artist_name"]) && is_string($albumData["artist_name"]) ? trim($albumData["artist_name"]) : '';
+            if ($albumName === '') {
+                return null;
             }
+            $stmt = $conn->prepare("INSERT INTO albums (name, artist_name) VALUES (?, ?)");
+            $stmt->execute([$albumName, $artistName === '' ? null : $artistName]);
+            return $conn->lastInsertId();
         }
-        
-        // If album doesn't exist, create it
-        if (!$albumId) {
-            if (!empty($externalAlbumId)) {
-                $stmt = $conn->prepare("INSERT INTO albums (external_album_id, external_artist_id, name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$externalAlbumId, $externalArtistId, $albumName, $artistName, $image60, $image100]);
-                $albumId = $conn->lastInsertId();
-            } else {
-                $stmt = $conn->prepare("INSERT INTO albums (name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$albumName, $artistName, $image60, $image100]);
-                $albumId = $conn->lastInsertId();
-            }
+
+        // Album déjà connu : réutilisé tel quel
+        $stmt = $conn->prepare("SELECT id FROM albums WHERE external_album_id = ? LIMIT 1");
+        $stmt->execute([$externalAlbumId]);
+        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($existing) {
+            return $existing["id"];
         }
-        
-        return $albumId;
+
+        // Nouvel album : ses données viennent de Deezer
+        $album = fetch_deezer_album($externalAlbumId);
+        if (!$album) {
+            return null;
+        }
+        $stmt = $conn->prepare("INSERT INTO albums (external_album_id, external_artist_id, name, artist_name, image_url_60, image_url_100) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$externalAlbumId, $album['artist_id'], $album['name'], $album['artist_name'], $album['image_url_60'], $album['image_url_100']]);
+        return $conn->lastInsertId();
+    }
+
+    /* Album Deezer (api.deezer.com/album/{id}) : titre, artiste, pochettes. Ou null. */
+    function fetch_deezer_album($deezerId)
+    {
+        if (!ctype_digit($deezerId)) {
+            return null;
+        }
+        $ch = curl_init('https://api.deezer.com/album/' . $deezerId);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        // Un identifiant inconnu renvoie aussi 200, avec une clé "error"
+        $data = $http_code === 200 ? json_decode($response, true) : null;
+        if (!is_array($data) || isset($data['error']) || empty($data['title'])) {
+            return null;
+        }
+        return [
+            'name'          => $data['title'],
+            'artist_id'     => $data['artist']['id'] ?? null,
+            'artist_name'   => $data['artist']['name'] ?? null,
+            'image_url_60'  => $data['cover_small'] ?? null,
+            'image_url_100' => $data['cover_medium'] ?? null,
+        ];
     }
 
     function validate_category_exists($categoryName)
@@ -584,7 +616,11 @@
                 }
                 
                 $albumId = find_or_create_album($conn, $albumData);
-                
+                if (!$albumId) {
+                    $conn->rollBack();
+                    return false;
+                }
+
                 // Add album to category
                 $stmt = $conn->prepare("INSERT INTO user_album_categories (user_id, album_id, category_id) VALUES (?, ?, ?)");
                 $stmt->execute([$userId, $albumId, $category['id']]);
