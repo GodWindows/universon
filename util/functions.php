@@ -169,15 +169,26 @@
         return $client->createAuthUrl();
     }
 
-    function saveSessionToDb($sessionToken, $googleAccessToken, $email) {
+    /* Durée de vie d'une session : cookie et contrôle en base. */
+    const SESSION_LIFETIME_DAYS = 30;
+
+    /* La base ne garde que l'empreinte du jeton : une fuite de la table
+       sessions ne donne aucun cookie utilisable. */
+    function session_token_hash($sessionToken) {
+        return hash('sha256', $sessionToken);
+    }
+
+    function saveSessionToDb($sessionToken, $email) {
         $conn = connect_database();
         if ($conn) {
             try {
-                $stmt = $conn->prepare("INSERT INTO sessions (session_token, google_access_token, email) VALUES (:token, :access, :email)");
+                // Ménage des sessions expirées à chaque connexion
+                $conn->exec("DELETE FROM sessions WHERE created_at < NOW() - INTERVAL " . SESSION_LIFETIME_DAYS . " DAY");
+
+                $stmt = $conn->prepare("INSERT INTO sessions (session_token, email) VALUES (:token, :email)");
                 $stmt->execute([
-                    ':token' => $sessionToken,
+                    ':token' => session_token_hash($sessionToken),
                     ':email' => $email,
-                    ':access' => $googleAccessToken,
                 ]);
                 if (env_type() == "dev") {
                     echo "Session saved successfully!<br>";
@@ -202,7 +213,7 @@
         if ($conn) {
             try {
                 $stmt = $conn->prepare("DELETE FROM sessions WHERE session_token = :token");
-                $stmt->execute([':token' => $sessionToken]);
+                $stmt->execute([':token' => session_token_hash($sessionToken)]);
             } catch (PDOException $e) {
                 if (env_type() == "dev") {
                     echo "Error: " . $e->getMessage();
@@ -211,41 +222,20 @@
         }
     }
 
-    function logout($sessionToken, $client) {
+    function logout($sessionToken) {
         setcookie("session_token", "", time() - 3600, "/", "", true, true);
-
-        $conn = connect_database();
-        if ($conn) {
-            try {
-                $stmt = $conn->prepare("SELECT google_access_token FROM sessions WHERE session_token = :token LIMIT 1");
-                $stmt->execute([':token' => $sessionToken]);
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                if ($row && !empty($row['google_access_token'])) {
-                    $accessToken = $row['google_access_token'];
-                    $client->setAccessToken($accessToken);
-                    try {
-                        $client->revokeToken();
-                    } catch (Exception $e) {
-                        if (env_type() == "dev") {
-                            error_log("Erreur lors de la révocation Google: " . $e->getMessage());
-                        }
-                    }
-                }
-            } catch (PDOException $e) {
-                if (env_type() == "dev") {
-                    echo "Error: " . $e->getMessage();
-                }
-            }
-        }
         deleteSessionFromDb($sessionToken);
     }
 
     function getUserFromSessionToken($sessionToken) {
+        if (!is_string($sessionToken) || $sessionToken === '') {
+            return null;
+        }
         $conn = connect_database();
         if ($conn) {
             try {
-                $stmt = $conn->prepare("SELECT email FROM sessions WHERE session_token = :token LIMIT 1");
-                $stmt->execute([':token' => $sessionToken]);
+                $stmt = $conn->prepare("SELECT email FROM sessions WHERE session_token = :token AND created_at > NOW() - INTERVAL " . SESSION_LIFETIME_DAYS . " DAY LIMIT 1");
+                $stmt->execute([':token' => session_token_hash($sessionToken)]);
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
             
                 if (!$row) {

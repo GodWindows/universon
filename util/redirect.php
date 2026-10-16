@@ -26,21 +26,19 @@ try {
     ]);
 
     $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
-    $googleAccessToken = $token['access_token'];
     $client->setAccessToken($token);
 
     $oauth = new Google\Service\Oauth2($client);
     $userinfo = $oauth->userinfo->get(); 
 
-    $_30days = (86400 * 30);
     if(! user_exists($userinfo->email)){
         create_user($userinfo->email, $userinfo->givenName, $userinfo->picture);
     }
     $sessionToken = base64_encode(random_bytes(32));
-    saveSessionToDb($sessionToken, $googleAccessToken, $userinfo->email );
+    saveSessionToDb($sessionToken, $userinfo->email);
     //setcookie('session_token',"baby miko", time() +$_30days , "/"); 
     setcookie('session_token', $sessionToken, [
-        'expires'  => time() + $_30days,
+        'expires'  => time() + 86400 * SESSION_LIFETIME_DAYS,
         'path'     => '/',
         'secure'   => true,
         'httponly' => true,
