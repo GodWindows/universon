@@ -703,7 +703,6 @@ function getSpotifyToken($spotify_client_id, $spotify_client_secret) {
         'Content-Type: application/x-www-form-urlencoded'
     ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
