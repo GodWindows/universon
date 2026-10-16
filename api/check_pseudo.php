@@ -46,6 +46,13 @@ if (strlen($pseudo) < 3 || strlen($pseudo) > 45) {
     exit;
 }
 
+// Same characters as the /@pseudo route: letters, digits, _ . -
+if (!preg_match('/^[A-Za-z0-9_.-]+$/', $pseudo)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Pseudo can only contain letters, digits, _ . -']);
+    exit;
+}
+
 // Check pseudo availability
 $available = check_pseudo_availability($pseudo);
 

@@ -164,7 +164,7 @@
             'url' => $shareUrl,
             'image' => $profileImage,
         ],
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>';
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>';
 
     pp_header($hasLogout);
 
