@@ -1,0 +1,12 @@
+# Robots.txt for Universon
+# https://universon.fr
+
+User-agent: *
+Allow: /
+Allow: /@*
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://universon.fr/sitemap.xml
+
+

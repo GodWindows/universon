@@ -1,0 +1,66 @@
+# Universon : frontend (nginx + React), backend (Node), base MySQL, phpMyAdmin.
+# Tous les conteneurs sont sur le réseau partagé « universon-shared ».
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      # Un dump .sql déposé ici est importé au tout premier démarrage (volume vide)
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks: [universon]
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      SITE_URL: ${SITE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [universon]
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    depends_on: [backend]
+    networks: [universon]
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      UPLOAD_LIMIT: 512M
+    ports:
+      # Uniquement accessible depuis la machine hôte
+      - "127.0.0.1:${PMA_PORT:-8081}:80"
+    depends_on: [db]
+    networks: [universon]
+
+networks:
+  universon:
+    name: universon-shared
+    driver: bridge
+
+volumes:
+  db_data:

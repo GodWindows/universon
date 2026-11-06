@@ -7,3 +7,7 @@ postman/search_albums.postman_collection.json
 to-do.txt
 docs/
 migrations/
+.env
+dist/
+db/init/*.sql
+db/init/*.sql.gz

@@ -32,103 +32,51 @@ points d'accroche pour cet habillage à venir.
 
 ## Technologies Utilisées
 
-- **Frontend** : HTML5, CSS3, JavaScript ES6+
-- **Backend** : PHP 8+, PDO
-- **Base de Données** : MySQL
+- **Frontend** : React 19 + Vite, servi par nginx
+- **Backend** : Node.js 24 + Express 5, mysql2
+- **Base de Données** : MySQL 8.4, supervisée par phpMyAdmin
 - **Authentification** : Google OAuth2
+- **Déploiement** : Docker Compose, réseau partagé `universon-shared`
 
 ## Structure du Projet
 
 ```
 universon/
-├── api/                              # API endpoints
-│   ├── add_album_to_category.php     # Ajouter un album à une catégorie
-│   ├── check_pseudo.php              # Vérifier la disponibilité d'un pseudo
-│   ├── get_albums_by_category.php    # Récupérer les albums par catégorie
-│   ├── get_categories.php            # Récupérer toutes les catégories
-│   ├── logout.php                    # Déconnexion
-│   ├── remove_album_from_category.php # Retirer un album d'une catégorie
-│   ├── save_review.php               # Enregistrer la note et l'avis d'un album
-│   ├── search_albums.php             # Rechercher des albums
-│   ├── update_bio.php                # Mise à jour de la bio
-│   ├── update_profile_visibility.php # Changer la visibilité du profil
-│   └── update_pseudo.php             # Changer le pseudo
-├── css/                              # Styles CSS
-│   └── base.css                      # Règles fonctionnelles uniquement (pas d'habillage)
-├── js/                               # JavaScript
-│   ├── app.js                        # Logique frontend
-│   ├── review.js                     # Fiche d'écriture d'un avis
-│   └── tabs.js                       # Onglets du profil : Listes / Avis
-├── migrations/                       # Scripts de migration de base de données
-├── pages/                            # Pages principales
-│   ├── dashboard.php                 # Tableau de bord utilisateur
-│   ├── landing.php                   # Page d'accueil
-│   ├── login.php                     # Page de connexion
-│   └── public_profile.php            # Profil public (/@username)
-├── util/                             # Utilitaires
-│   ├── functions.php                 # Fonctions PHP
-│   └── redirect.php                  # Gestion OAuth callbacks
-├── vendor/                           # Dépendances Composer
-├── .htaccess                         # Configuration Apache
-├── index.php                         # Point d'entrée principal
-├── composer.json                     # Dépendances PHP
-├── package.json                      # Dépendances Node.js
-└── README.md                         # Documentation
+├── backend/                 # API Node (Express)
+│   └── src/
+│       ├── server.js        # Routes /api/* et connexion Google
+│       ├── queries.js       # Requêtes SQL
+│       └── db.js            # Pool MySQL
+├── frontend/                # Application React (Vite)
+│   ├── public/              # css/, img/, manifest, robots, sitemap
+│   ├── src/
+│   │   ├── pages/           # Landing, Login, Dashboard, PublicProfile
+│   │   ├── lang/            # fr.json, en.json, fon.json
+│   │   └── ...
+│   └── nginx.conf           # Sert React et relaie /api vers le backend
+├── db/init/                 # Dump .sql importé au premier démarrage
+├── docker-compose.yml
+└── .env.example
 ```
+
+| Conteneur | Image | Accès |
+| --- | --- | --- |
+| `frontend` | nginx + build React | http://localhost:8080 |
+| `backend` | node:24-alpine | interne (port 3000), via `/api` |
+| `db` | mysql:8.4 | interne uniquement |
+| `phpmyadmin` | phpmyadmin:5.2 | http://127.0.0.1:8081 (machine hôte seulement) |
 
 ## Installation
 
-1. **Cloner le projet**
-   ```bash
-   git clone https://github.com/votre-username/universon.git
-   cd universon
-   ```
+1. `cp .env.example .env` et remplir les valeurs (Google, mots de passe de la base, `SITE_URL`).
+2. Importer la base existante : déposer le dump dans `db/init/` (ex. `db/init/universon.sql`)
+   **avant** le premier démarrage. Il n'est importé que si le volume de la base est vide
+   (`docker compose down -v` pour repartir de zéro). Sinon, importer via phpMyAdmin.
+3. `docker compose up -d --build`
+4. Dans la console Google Cloud, ajouter l'URI de redirection `${SITE_URL}/api/auth/google/callback`.
 
-2. **Installer les dépendances**
-   ```bash
-   composer install
-   npm install  # Optionnel, pour JSLint
-   ```
-
-3. **Configurer la base de données**
-   - Créer une base de données MySQL/MariaDB
-   - Exécuter les scripts de migration dans le dossier `migrations/`
-   - Créer un fichier `env_data.php` à la racine avec vos informations de BDD :
-   ```php
-   <?php
-   // Configuration de la base de données
-   $db_host = 'localhost';
-   $db_name = 'votre_db';
-   $db_user = 'votre_user';
-   $db_pass = 'votre_password';
-   
-   // Configuration Google OAuth2
-   $google_client_id = 'votre_client_id';
-   $google_client_secret = 'votre_client_secret';
-   $google_redirect_uri = 'https://universon.fr/util/redirect.php';
-   
-   // Configuration du site
-   $site_title = 'Universon';
-   $site_url = 'https://universon.fr';
-   ```
-
-4. **Configurer Google OAuth**
-   - Créer un projet sur [Google Cloud Console](https://console.cloud.google.com/)
-   - Activer l'API Google+ ou People API
-   - Créer des identifiants OAuth 2.0
-   - Ajouter les URI de redirection autorisées
-   - Copier le Client ID et Client Secret dans `env_data.php`
-
-5. **Configurer le serveur web**
-   - Pour Apache : Le fichier `.htaccess` est déjà configuré
-   - Pour Nginx : Configurer les redirections pour les profils publics `/@username`
-   - S'assurer que `mod_rewrite` est activé (Apache)
-
-6. **Lancer le serveur en local (développement)**
-   ```bash
-   php -S localhost:8000
-   ```
-   Puis accéder à `http://localhost:8000`
+Développement du frontend avec rechargement à chaud : la stack lancée, `cd frontend && npm install && npm run dev`
+(Vite relaie `/api` vers http://localhost:8080).
 
 ## Appliquer un habillage visuel
 
@@ -184,13 +132,6 @@ Les principaux points d'accroche disponibles dans le HTML :
 - [ ] Système de followers/following
 - [ ] Commentaires et likes sur les profils
 
-## Contribution
-
-1. Fork le projet
-2. Créer une branche feature
-3. Commiter les changements
-4. Pousser vers la branche
-5. Ouvrir une Pull Request
 
 ## Licence
 
