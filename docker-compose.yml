@@ -1,7 +1,7 @@
 # Universon : frontend (nginx + React), backend (Node), base MySQL, phpMyAdmin.
 # Tous les conteneurs sont sur le réseau partagé « universon-shared ».
 services:
-  db:
+  universon-db:
     image: mysql:8.4
     restart: unless-stopped
     environment:
@@ -24,7 +24,7 @@ services:
     build: ./backend
     restart: unless-stopped
     environment:
-      DB_HOST: db
+      DB_HOST: universon-db
       DB_PORT: 3306
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
@@ -33,7 +33,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       SITE_URL: ${SITE_URL}
     depends_on:
-      db:
+      universon-db:
         condition: service_healthy
     networks: [universon]
 
@@ -49,12 +49,12 @@ services:
     image: phpmyadmin:5.2
     restart: unless-stopped
     environment:
-      PMA_HOST: db
+      PMA_HOST: universon-db
       UPLOAD_LIMIT: 512M
     ports:
       # Uniquement accessible depuis la machine hôte
       - "127.0.0.1:${PMA_PORT:-8081}:80"
-    depends_on: [db]
+    depends_on: [universon-db]
     networks: [universon]
 
 networks:
