@@ -78,23 +78,6 @@ universon/
 Développement du frontend avec rechargement à chaud : la stack lancée, `cd frontend && npm install && npm run dev`
 (Vite relaie `/api` vers http://localhost:8080).
 
-## Appliquer un habillage visuel
-
-Aucune direction visuelle n'est choisie à ce stade. Pour en appliquer une, ajoutez
-une feuille de style à côté de `css/base.css` et référencez-la dans les pages —
-sans modifier `base.css`, qui doit rester limité aux règles fonctionnelles.
-
-Les principaux points d'accroche disponibles dans le HTML :
-
-| Classe / id | Rôle |
-| --- | --- |
-| `.site-header`, `.site-logo`, `.site-footer` | En-tête et pied de page |
-| `.profile`, `.profile-avatar`, `.pseudo-display`, `.bio` | Identité et bio |
-| `.category`, `.album-list`, `.album`, `.album-title`, `.album-artist` | Collection par catégorie |
-| `.modal`, `.add-album-modal`, `.album-suggestions` | Modales et autocomplétion |
-| `.notification` (`-success` / `-error` / `-info`) | Messages créés par le JS |
-| `.error`, `.no-albums`, `.feedback` | États vides, erreurs, retours de saisie |
-
 ## Accessibilité
 
 - Navigation au clavier
